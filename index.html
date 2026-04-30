@@ -1,0 +1,4956 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dwaya — Prototype interactif complet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cairo:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+/* ========================================
+   DESIGN TOKENS — Match the splash image
+   ======================================== */
+:root {
+  /* Palette inspirée de l'image : bleu cloche + fond pastel */
+  --primary-50:  #F0F8FE;
+  --primary-100: #DCEEFB;
+  --primary-200: #B8DDF7;
+  --primary-300: #8FC7F1;
+  --primary-400: #6DB8EC;     /* la cloche */
+  --primary-500: #4DAEEC;     /* boutons primaires */
+  --primary-600: #2493DC;
+  --primary-700: #1376BB;
+  --primary-800: #0F5C92;
+
+  /* Fond pastel comme l'image */
+  --bg-pastel-top:    #E5F1FB;
+  --bg-pastel-mid:    #DCEAF7;
+  --bg-pastel-bot:    #C9DFF1;
+
+  --med-500:  #16A34A;
+  --med-100:  #DCFCE7;
+  --warn-500: #F59E0B;
+  --warn-100: #FEF3C7;
+  --danger-500: #DC2626;
+  --danger-100: #FEE2E2;
+  --success-500: #16A34A;
+
+  --ink-900: #0F1B2D;
+  --ink-700: #2A3B52;
+  --ink-500: #5B6A82;
+  --ink-300: #9CA8BC;
+  --ink-200: #C8D1DE;
+  --ink-100: #E8ECF3;
+  --ink-50:  #F1F4F9;
+  --bg-soft: #F6F8FB;
+  --white:   #FFFFFF;
+
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px;
+  --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px;
+
+  --r-sm: 12px; --r-md: 16px; --r-lg: 20px; --r-xl: 28px; --r-pill: 999px;
+
+  --shadow-sm: 0 2px 6px rgba(15, 27, 45, 0.06);
+  --shadow-md: 0 8px 24px rgba(15, 27, 45, 0.08);
+  --shadow-lg: 0 16px 40px rgba(15, 27, 45, 0.12);
+  --shadow-xl: 0 30px 80px rgba(15, 27, 45, 0.18);
+  --shadow-primary: 0 8px 24px rgba(77, 174, 236, 0.4);
+  --shadow-primary-lg: 0 12px 36px rgba(77, 174, 236, 0.5);
+  --shadow-med: 0 8px 24px rgba(22, 163, 74, 0.28);
+  --shadow-danger: 0 8px 24px rgba(220, 38, 38, 0.32);
+
+  --t-xs: 13px;
+  --t-sm: 15px;
+  --t-base: 17px;
+  --t-md: 19px;
+  --t-lg: 22px;
+  --t-xl: 28px;
+  --t-2xl: 36px;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, system-ui, sans-serif;
+  --font-arabic: 'Cairo', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+html, body {
+  font-family: var(--font-body);
+  font-size: var(--t-base);
+  color: var(--ink-900);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(143, 199, 241, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 88% 92%, rgba(77, 174, 236, 0.18) 0%, transparent 50%),
+    linear-gradient(135deg, #ecf3fb 0%, #dde9f6 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ========================================
+   DEMO STAGE LAYOUT
+   ======================================== */
+.stage {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  gap: 32px;
+  padding: 32px 40px;
+  align-items: start;
+}
+
+/* LEFT — Brand + now showing */
+.stage-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 32px;
+}
+.brand-card {
+  background: white;
+  border-radius: 24px;
+  padding: 26px 22px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+.brand-card .brand-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.brand-card .brand-logo {
+  width: 56px; height: 56px;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-card .brand-logo svg { width: 100%; height: 100%; }
+.brand-card .brand-name {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary-500);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.brand-card .brand-name + .brand-tag {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-500);
+  margin-top: 2px;
+}
+.brand-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--primary-600);
+  margin-bottom: 8px;
+}
+.brand-card .lead {
+  font-size: 13px;
+  color: var(--ink-500);
+  line-height: 1.55;
+}
+
+.now-showing {
+  background: white;
+  border-radius: 20px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--ink-100);
+}
+.now-showing .ns-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-300);
+  margin-bottom: 8px;
+}
+.now-showing .ns-title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.now-showing .ns-desc {
+  font-size: 13px;
+  color: var(--ink-500);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.ns-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+}
+.ns-badge.flow { background: var(--primary-100); color: var(--primary-700); }
+.ns-badge.new { background: var(--med-100); color: #166534; }
+.ns-badge.fix { background: var(--warn-100); color: #92400E; }
+.ns-badge.pivot { background: var(--danger-100); color: #991B1B; }
+.ns-badge.empty { background: var(--ink-50); color: var(--ink-500); }
+.ns-badge.error { background: var(--danger-100); color: #991B1B; }
+
+/* CENTER — Phone */
+.stage-phone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.phone {
+  width: 380px;
+  height: 800px;
+  background: var(--white);
+  border-radius: 48px;
+  border: 12px solid #1a1f2e;
+  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255,255,255,0.05) inset;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.phone .notch {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 26px;
+  background: #1a1f2e;
+  border-radius: 14px;
+  z-index: 100;
+}
+.status-bar {
+  height: 46px;
+  padding: 16px 26px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-900);
+  flex-shrink: 0;
+  z-index: 50;
+}
+.status-bar.dark { color: white; }
+.status-bar .right { display: flex; gap: 6px; align-items: center; font-size: 11px; }
+
+.screen-host {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transform: translateX(20px);
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  z-index: 5;
+}
+.screen.leaving {
+  opacity: 0;
+  transform: translateX(-20px);
+  z-index: 1;
+}
+
+.phone-hint {
+  font-size: 13px;
+  color: var(--ink-500);
+  text-align: center;
+  max-width: 360px;
+  line-height: 1.5;
+  background: rgba(255,255,255,0.7);
+  padding: 10px 18px;
+  border-radius: var(--r-pill);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+.phone-hint kbd {
+  background: white;
+  border: 1px solid var(--ink-200);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--ink-700);
+  margin: 0 2px;
+}
+
+/* RIGHT — Menu */
+.menu-card {
+  background: white;
+  border-radius: 24px;
+  padding: 22px 18px;
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 32px;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+.menu-card::-webkit-scrollbar { width: 6px; }
+.menu-card::-webkit-scrollbar-thumb { background: var(--ink-100); border-radius: 3px; }
+.menu-card .menu-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.menu-card .menu-sub {
+  font-size: 12px;
+  color: var(--ink-500);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.menu-section {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-300);
+  margin: 12px 0 6px;
+  padding: 0 4px;
+}
+.menu-section:first-of-type { margin-top: 0; }
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-700);
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  line-height: 1.3;
+}
+.menu-item:hover { background: var(--bg-soft); }
+.menu-item:active { transform: scale(0.98); }
+.menu-item.active {
+  background: var(--primary-50);
+  color: var(--primary-700);
+}
+.menu-item .ico { font-size: 13px; width: 16px; text-align: center; flex-shrink: 0; }
+.menu-item .name { flex: 1; }
+
+.reset-btn {
+  margin-top: 16px;
+  width: 100%;
+  padding: 11px;
+  background: var(--bg-soft);
+  border: 1px solid var(--ink-100);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-700);
+  cursor: pointer;
+}
+.reset-btn:hover { background: var(--ink-100); }
+
+@media (max-width: 1280px) {
+  .stage {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 24px 20px;
+  }
+  .stage-side, .menu-card { position: static; max-height: none; }
+  .stage-phone { order: -1; }
+}
+
+/* ========================================
+   SHARED UI — bottoms, buttons, top-bars
+   ======================================== */
+.top-bar {
+  padding: var(--s-3) var(--s-5) var(--s-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.top-bar .back-btn {
+  width: 44px; height: 44px;
+  border-radius: var(--r-pill);
+  background: var(--bg-soft);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-700);
+  font-size: 22px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.top-bar .back-btn:hover { background: var(--ink-100); }
+.top-bar .back-btn:active { transform: scale(0.92); }
+.top-bar h2 {
+  font-family: var(--font-display);
+  font-size: var(--t-lg);
+  font-weight: 600;
+  color: var(--ink-900);
+  flex: 1;
+  text-align: center;
+}
+.top-bar .voice-btn {
+  width: 44px; height: 44px;
+  border-radius: var(--r-pill);
+  background: var(--primary-100);
+  color: var(--primary-600);
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  animation: pulse-voice 2.4s ease-in-out infinite;
+}
+@keyframes pulse-voice {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(77, 174, 236, 0.45); }
+  50% { box-shadow: 0 0 0 10px rgba(77, 174, 236, 0); }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: 18px 24px;
+  border-radius: var(--r-md);
+  font-family: var(--font-body);
+  font-size: var(--t-md);
+  font-weight: 700;
+  line-height: 1;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+  min-height: 60px;
+  width: 100%;
+}
+.btn:hover { filter: brightness(1.05); }
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--primary-500);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+.btn-secondary {
+  background: var(--white);
+  color: var(--primary-600);
+  border: 2px solid var(--primary-200);
+}
+.btn-success {
+  background: var(--success-500);
+  color: white;
+  box-shadow: var(--shadow-med);
+}
+.btn-danger {
+  background: var(--danger-500);
+  color: white;
+  box-shadow: var(--shadow-danger);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-700);
+  font-size: var(--t-base);
+  font-weight: 600;
+}
+.btn-ghost.danger { color: var(--danger-500); }
+
+.bottom-nav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 76px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--ink-100);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding-bottom: 14px;
+  z-index: 40;
+}
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink-300);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  transition: color 0.15s, transform 0.1s;
+}
+.nav-item .ico { font-size: 22px; line-height: 1; }
+.nav-item.active { color: var(--primary-500); }
+.nav-item:active { transform: scale(0.92); }
+
+/* Generic field input */
+.field { margin: 0 20px 14px; }
+.field label {
+  display: block;
+  font-size: var(--t-sm);
+  font-weight: 700;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.field-input {
+  background: white;
+  border: 2px solid var(--ink-100);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border 0.15s;
+}
+.field-input:focus-within { border-color: var(--primary-400); }
+.field-input .icon {
+  color: var(--primary-500);
+  font-size: 22px;
+  font-style: normal;
+}
+.field-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: var(--t-md);
+  font-weight: 600;
+  color: var(--ink-900);
+  background: transparent;
+  font-family: inherit;
+  width: 100%;
+  min-width: 0;
+}
+.field-input input::placeholder {
+  color: var(--ink-300);
+  font-weight: 500;
+}
+
+/* CTA stuck at bottom of scrollable content */
+.bottom-cta {
+  position: sticky;
+  bottom: 0; left: 0; right: 0;
+  padding: 16px 20px 24px;
+  background: linear-gradient(0deg, var(--bg-soft) 60%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Cards — generic */
+.card {
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ========================================
+   SVG LOGO — the "Dwaya bell"
+   ======================================== */
+.dwaya-bell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========================================
+   SCREEN: SPLASH  (matches the image)
+   ======================================== */
+.splash {
+  height: 100%;
+  background:
+    linear-gradient(180deg, var(--bg-pastel-top) 0%, var(--bg-pastel-mid) 60%, var(--bg-pastel-bot) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 32px 36px;
+  position: relative;
+  overflow: hidden;
+}
+.splash-bg-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+}
+.splash-bg-pattern svg { width: 100%; height: 100%; }
+.splash-logo-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  justify-content: center;
+  gap: 20px;
+}
+.splash-bell {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 12px 24px rgba(77, 174, 236, 0.35));
+}
+.splash-bell svg { width: 100%; height: 100%; }
+.splash-name {
+  font-family: var(--font-display);
+  font-size: 78px;
+  font-weight: 700;
+  color: var(--primary-500);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-shadow: 0 4px 14px rgba(77, 174, 236, 0.18);
+}
+.splash-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  z-index: 2;
+}
+.splash-actions .btn { font-size: var(--t-md); }
+
+/* ========================================
+   SCREEN: LANGUE
+   ======================================== */
+.lang-screen {
+  height: 100%;
+  background:
+    linear-gradient(180deg, var(--bg-pastel-top) 0%, white 80%);
+  padding: 36px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.lang-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.lang-header .glob {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: var(--primary-100);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 40px;
+}
+.lang-header h2 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink-900);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.lang-header .ar {
+  font-family: var(--font-arabic);
+  font-size: 18px;
+  color: var(--ink-500);
+}
+.lang-tile {
+  background: white;
+  border: 2px solid var(--ink-100);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s;
+}
+.lang-tile.selected {
+  border-color: var(--primary-500);
+  background: var(--primary-50);
+  box-shadow: var(--shadow-primary);
+}
+.lang-tile .flag { font-size: 36px; line-height: 1; flex-shrink: 0; }
+.lang-tile .nm { flex: 1; }
+.lang-tile .nm .n {
+  font-size: var(--t-md);
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 2px;
+}
+.lang-tile .nm .n.arabic { font-family: var(--font-arabic); font-size: 22px; }
+.lang-tile .nm .s {
+  font-size: var(--t-sm);
+  color: var(--ink-500);
+}
+.lang-tile .check {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--ink-200);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  color: transparent;
+}
+.lang-tile.selected .check {
+  background: var(--primary-500);
+  border-color: var(--primary-500);
+  color: white;
+}
+.lang-tile.selected .check::before { content: '✓'; font-weight: 700; }
+
+/* ========================================
+   SCREEN: ONBOARDING (3 steps)
+   ======================================== */
+.onb-screen {
+  height: 100%;
+  background:
+    linear-gradient(180deg, var(--bg-pastel-top) 0%, white 70%);
+  padding: 36px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-y: auto;
+}
+.onb-skip {
+  position: absolute;
+  top: 28px; right: 24px;
+  background: none;
+  border: none;
+  color: var(--ink-500);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 6px 10px;
+}
+.onb-illust {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 0 12px;
+}
+.onb-illust .big-emoji {
+  font-size: 130px;
+  line-height: 1;
+  filter: drop-shadow(0 18px 40px rgba(77, 174, 236, 0.25));
+}
+.onb-illust h1 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--ink-900);
+  text-align: center;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+.onb-illust p {
+  font-size: var(--t-md);
+  color: var(--ink-500);
+  text-align: center;
+  line-height: 1.5;
+}
+.onb-listen {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary-100);
+  color: var(--primary-700);
+  border: none;
+  border-radius: var(--r-pill);
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 0 auto;
+}
+.onb-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 22px 0;
+}
+.onb-dots .d {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--ink-200);
+}
+.onb-dots .d.active {
+  background: var(--primary-500);
+  width: 28px;
+  border-radius: 5px;
+}
+
+/* ========================================
+   SCREEN: PERMISSIONS (notif, camera)
+   ======================================== */
+.perm-screen {
+  height: 100%;
+  background: linear-gradient(180deg, var(--bg-pastel-top) 0%, white 60%);
+  padding: 40px 28px 32px;
+  display: flex;
+  flex-direction: column;
+}
+.perm-illust {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  text-align: center;
+}
+.perm-icon-circle {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: var(--primary-100);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 64px;
+  position: relative;
+}
+.perm-icon-circle::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  border: 2px dashed var(--primary-300);
+  opacity: 0.6;
+}
+.perm-illust h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink-900);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.perm-illust p {
+  font-size: var(--t-base);
+  color: var(--ink-500);
+  line-height: 1.55;
+  max-width: 280px;
+}
+.perm-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+.perm-bullet {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--ink-100);
+}
+.perm-bullet .ic {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--primary-50);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.perm-bullet .tx {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-700);
+  line-height: 1.4;
+}
+
+/* ========================================
+   AUTH — login, signup, forgot, verify
+   ======================================== */
+.auth-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 32px;
+}
+.auth-hero {
+  background: linear-gradient(180deg, var(--bg-pastel-top) 0%, var(--bg-pastel-mid) 100%);
+  padding: 32px 24px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.auth-hero .bell-mini {
+  width: 70px; height: 70px;
+  margin: 0 auto 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-hero h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink-900);
+  text-align: center;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.auth-hero p {
+  font-size: var(--t-sm);
+  color: var(--ink-500);
+  text-align: center;
+}
+.auth-form {
+  padding-top: 24px;
+}
+.auth-link {
+  text-align: center;
+  font-size: var(--t-sm);
+  color: var(--ink-500);
+  margin-top: 14px;
+}
+.auth-link a {
+  color: var(--primary-600);
+  font-weight: 700;
+  cursor: pointer;
+}
+.auth-forgot {
+  display: block;
+  text-align: right;
+  margin: -4px 20px 16px;
+  font-size: 13px;
+  color: var(--primary-600);
+  font-weight: 600;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+/* OTP Boxes */
+.otp-boxes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 12px 20px 24px;
+}
+.otp-boxes input {
+  width: 48px; height: 56px;
+  border: 2px solid var(--ink-100);
+  border-radius: 14px;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--ink-900);
+  background: white;
+  outline: none;
+  transition: border 0.15s;
+}
+.otp-boxes input:focus { border-color: var(--primary-500); }
+.otp-boxes input.filled { border-color: var(--primary-500); background: var(--primary-50); }
+
+/* Success card */
+.auth-success {
+  text-align: center;
+  padding: 40px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.success-circle {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: var(--success-500);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 60px;
+  color: white;
+  margin: 0 auto 24px;
+  box-shadow: var(--shadow-med);
+  animation: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes pop-in {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.auth-success h1 {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+.auth-success p {
+  font-size: var(--t-md);
+  color: var(--ink-500);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+/* MODE selection (patient / aidant) */
+.mode-screen {
+  height: 100%;
+  background: linear-gradient(180deg, var(--bg-pastel-top) 0%, white 60%);
+  padding: 32px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.mode-screen h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink-900);
+  letter-spacing: -0.01em;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.mode-screen .sub {
+  font-size: var(--t-sm);
+  color: var(--ink-500);
+  text-align: center;
+  margin-bottom: 24px;
+}
+.mode-card {
+  background: white;
+  border: 2px solid var(--ink-100);
+  border-radius: var(--r-lg);
+  padding: 22px 20px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: all 0.2s;
+}
+.mode-card.selected {
+  border-color: var(--primary-500);
+  background: var(--primary-50);
+  box-shadow: var(--shadow-primary);
+}
+.mode-card .ic {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: var(--primary-100);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  flex-shrink: 0;
+}
+.mode-card .info { flex: 1; }
+.mode-card .info .t {
+  font-size: var(--t-md);
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 4px;
+}
+.mode-card .info .d {
+  font-size: var(--t-sm);
+  color: var(--ink-500);
+  line-height: 1.5;
+}
+
+/* ========================================
+   SCREEN: HOME — "Aujourd'hui"
+   ======================================== */
+.home {
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-soft);
+  padding-bottom: 96px;
+}
+.home-hero {
+  background: linear-gradient(160deg, var(--primary-400) 0%, var(--primary-600) 100%);
+  padding: 16px 24px 36px;
+  border-radius: 0 0 32px 32px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.home-hero::before {
+  content: '';
+  position: absolute;
+  top: -40%; right: -20%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+.home-greeting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  position: relative;
+}
+.home-greeting .greet-text .hello {
+  font-size: var(--t-sm);
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 2px;
+}
+.home-greeting .greet-text .name {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+.home-greeting .actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 20px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s;
+}
+.icon-btn:active { transform: scale(0.92); }
+.icon-btn .badge-dot {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 10px; height: 10px;
+  background: #FCA5A5;
+  border-radius: 50%;
+  border: 2px solid var(--primary-500);
+}
+
+.next-rappel-card {
+  background: rgba(255,255,255,0.16);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.next-rappel-card:active { transform: scale(0.98); }
+.nrc-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 6px;
+}
+.nrc-time {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.nrc-meds {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nrc-meds .pill-icon {
+  width: 40px; height: 40px;
+  background: rgba(255,255,255,0.22);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.nrc-meds .info { flex: 1; }
+.nrc-meds .info .n1 { font-weight: 700; font-size: var(--t-base); }
+.nrc-meds .info .n2 { font-size: 12px; color: rgba(255,255,255,0.78); margin-top: 2px; }
+
+.home-quickactions {
+  padding: 22px 20px 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.qa-tile {
+  background: white;
+  border-radius: var(--r-md);
+  padding: 14px 10px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.qa-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.qa-tile:active { transform: scale(0.96); }
+.qa-tile .qa-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 8px;
+}
+.qa-tile.med .qa-icon { background: var(--med-100); color: var(--med-500); }
+.qa-tile.rdv .qa-icon { background: var(--primary-100); color: var(--primary-600); }
+.qa-tile.sos .qa-icon { background: var(--danger-100); color: var(--danger-500); }
+.qa-tile .qa-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.home-section { padding: 8px 20px 16px; }
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+.section-head h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+.section-head a {
+  color: var(--primary-600);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.med-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: white;
+  border-radius: var(--r-md);
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.15s;
+  border: none;
+  width: 100%;
+  font-family: inherit;
+  text-align: left;
+}
+.med-row:active { transform: scale(0.98); }
+.med-row .left-bar { width: 4px; height: 40px; border-radius: 2px; }
+.med-row.taken .left-bar { background: var(--success-500); }
+.med-row.upcoming .left-bar { background: var(--warn-500); }
+.med-row.miss .left-bar { background: var(--danger-500); }
+.med-row .info { flex: 1; }
+.med-row .info .n {
+  font-size: var(--t-base);
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 2px;
+}
+.med-row .info .s { font-size: var(--t-sm); color: var(--ink-500); }
+.med-row .status-pill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  flex-shrink: 0;
+}
+.med-row.taken .status-pill { background: var(--med-100); color: #166534; }
+.med-row.upcoming .status-pill { background: var(--warn-100); color: #92400E; }
+.med-row.miss .status-pill { background: var(--danger-100); color: #991B1B; }
+
+.rdv-card {
+  background: white;
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.15s;
+  width: 100%;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+}
+.rdv-card:active { transform: scale(0.98); }
+.rdv-card .doc-avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-300), var(--primary-500));
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.rdv-card .info { flex: 1; }
+.rdv-card .info .n { font-size: var(--t-base); font-weight: 700; color: var(--ink-900); }
+.rdv-card .info .s { font-size: var(--t-sm); color: var(--ink-500); margin-top: 2px; }
+.rdv-card .arrow { color: var(--primary-500); font-size: 20px; }
+
+/* ========================================
+   LISTE MEDICAMENTS / RDV
+   ======================================== */
+.list-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 96px;
+}
+.list-header {
+  padding: 16px 20px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.list-header h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ink-900);
+  letter-spacing: -0.01em;
+}
+.list-add {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--primary-500);
+  color: white;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: var(--shadow-primary);
+  display: flex; align-items: center; justify-content: center;
+}
+.list-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 12px;
+}
+.list-tab {
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  background: white;
+  border: 1px solid var(--ink-100);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-700);
+  cursor: pointer;
+  font-family: inherit;
+}
+.list-tab.active {
+  background: var(--primary-500);
+  border-color: var(--primary-500);
+  color: white;
+}
+.list-content { padding: 0 20px; }
+.list-day-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-300);
+  margin: 14px 0 8px;
+}
+
+.med-card {
+  background: white;
+  border-radius: var(--r-md);
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 0.15s;
+  border: none;
+  width: 100%;
+  font-family: inherit;
+  text-align: left;
+}
+.med-card:active { transform: scale(0.98); }
+.med-card .pill-img {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fee, #fbbf24);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.med-card .info { flex: 1; }
+.med-card .info .n {
+  font-size: var(--t-base);
+  font-weight: 700;
+  color: var(--ink-900);
+  margin-bottom: 2px;
+}
+.med-card .info .s {
+  font-size: var(--t-sm);
+  color: var(--ink-500);
+  line-height: 1.4;
+}
+.med-card .info .t {
+  font-size: 12px;
+  color: var(--primary-600);
+  font-weight: 600;
+  margin-top: 4px;
+}
+.med-card .arrow { color: var(--ink-300); font-size: 22px; }
+
+/* ========================================
+   DETAIL MEDIC / RDV
+   ======================================== */
+.detail-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 100px;
+}
+.detail-hero {
+  background: linear-gradient(160deg, var(--primary-400), var(--primary-600));
+  padding: 24px 24px 32px;
+  border-radius: 0 0 32px 32px;
+  color: white;
+  text-align: center;
+}
+.detail-hero .pill-img-lg {
+  width: 90px; height: 90px;
+  border-radius: 22px;
+  background: rgba(255,255,255,0.22);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px;
+  margin: 0 auto 16px;
+}
+.detail-hero h1 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.detail-hero .sub {
+  font-size: var(--t-sm);
+  color: rgba(255,255,255,0.85);
+}
+.detail-hero .top-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.detail-hero .top-row .back-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+.detail-hero .top-row .back-btn:hover { background: rgba(255,255,255,0.3); }
+.detail-hero .top-row .actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.detail-hero .top-row .icon-btn {
+  width: 40px; height: 40px;
+  background: rgba(255,255,255,0.2);
+}
+
+.detail-info-grid {
+  margin: 20px 20px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.info-tile {
+  background: white;
+  border-radius: var(--r-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.info-tile .lbl {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-300);
+  margin-bottom: 6px;
+}
+.info-tile .val {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-900);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.info-tile .val .em { font-size: 18px; }
+
+.detail-section {
+  margin: 24px 20px 0;
+}
+.detail-section .section-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 10px;
+}
+.detail-time-list {
+  background: white;
+  border-radius: var(--r-md);
+  padding: 4px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ink-100);
+}
+.time-row:last-child { border: none; }
+.time-row .em { font-size: 22px; }
+.time-row .lbl { flex: 1; font-weight: 700; color: var(--ink-700); }
+.time-row .hh {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-600);
+}
+
+.detail-actions {
+  margin: 24px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.danger-zone {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ink-100);
+}
+
+/* RDV detail map */
+.detail-map {
+  margin: 16px 20px 0;
+  height: 160px;
+  border-radius: var(--r-md);
+  background:
+    linear-gradient(135deg, #cfe5f7 0%, #b8d8ed 100%);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--ink-100);
+}
+.detail-map::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 30px, rgba(255,255,255,0.18) 30px 31px),
+    repeating-linear-gradient(-45deg, transparent 0 40px, rgba(255,255,255,0.12) 40px 41px);
+}
+.detail-map .pin {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -100%);
+  font-size: 40px;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
+  animation: pin-bounce 1.6s ease-in-out infinite;
+}
+@keyframes pin-bounce {
+  0%, 100% { transform: translate(-50%, -100%); }
+  50% { transform: translate(-50%, -106%); }
+}
+.detail-map .pin-shadow {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.25);
+  filter: blur(2px);
+}
+
+/* ========================================
+   POSOLOGIE / SCAN / RDV form
+   ======================================== */
+.scan-screen {
+  height: 100%;
+  background: #0a0e15;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.scan-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(0,0,0,0.5), transparent);
+  z-index: 10;
+}
+.scan-header .close {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: white;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.scan-header h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+.scan-viewport {
+  flex: 1;
+  background: linear-gradient(135deg, #1a2332 0%, #0a0e15 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.scan-mockbox {
+  width: 220px; height: 280px;
+  background: linear-gradient(135deg, #fee, #fed);
+  border-radius: 8px;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+  position: relative;
+  transform: rotate(-3deg);
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+.scan-mockbox .pharma-tag {
+  color: #c00;
+  font-size: 11px;
+  font-weight: 800;
+}
+.scan-mockbox .brand {
+  font-family: var(--font-display);
+  color: #c00;
+  font-size: 26px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+.scan-mockbox .desc { color: #555; font-size: 9px; margin-top: 4px; }
+.scan-mockbox .img-area {
+  flex: 1;
+  background: linear-gradient(135deg, #fdba74 0%, #fbbf24 100%);
+  border-radius: 4px;
+  margin-top: 12px;
+  position: relative;
+}
+.scan-mockbox .img-area::after {
+  content: '💊';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+}
+.scan-frame {
+  position: absolute;
+  inset: 80px 40px 200px;
+  border: 3px solid white;
+  border-radius: 24px;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+.scan-frame .corner {
+  position: absolute;
+  width: 32px; height: 32px;
+  border: 4px solid var(--primary-400);
+}
+.scan-frame .corner.tl { top: -3px; left: -3px; border-right: none; border-bottom: none; border-radius: 24px 0 0 0; }
+.scan-frame .corner.tr { top: -3px; right: -3px; border-left: none; border-bottom: none; border-radius: 0 24px 0 0; }
+.scan-frame .corner.bl { bottom: -3px; left: -3px; border-right: none; border-top: none; border-radius: 0 0 0 24px; }
+.scan-frame .corner.br { bottom: -3px; right: -3px; border-left: none; border-top: none; border-radius: 0 0 24px 0; }
+.scan-helper {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary-500);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--r-pill);
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: var(--shadow-md);
+  z-index: 5;
+  animation: pulse-helper 2s ease-in-out infinite;
+}
+@keyframes pulse-helper {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.05); }
+}
+.scan-controls {
+  padding: 24px 24px 32px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.7), transparent);
+  z-index: 10;
+}
+.scan-instruction { text-align: center; margin-bottom: 22px; }
+.scan-instruction .t1 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.scan-instruction .t2 {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+}
+.scan-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+}
+.scan-buttons .side-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 22px;
+  border: none;
+  cursor: pointer;
+}
+.scan-shutter {
+  width: 76px; height: 76px;
+  border-radius: 50%;
+  background: white;
+  border: 5px solid rgba(255,255,255,0.3);
+  cursor: pointer;
+  position: relative;
+}
+.scan-shutter::after {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  animation: pulse-ring 2s ease-in-out infinite;
+}
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 0; }
+}
+.scan-manual-link {
+  text-align: center;
+  margin-top: 14px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* POSOLOGIE */
+.pos-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 100px;
+  position: relative;
+}
+.pos-product-card {
+  margin: 0 20px 20px;
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.pos-product-card .img {
+  width: 60px; height: 60px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fee, #fbbf24);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+}
+.pos-product-card .info { flex: 1; }
+.pos-product-card .info .n { font-size: 18px; font-weight: 700; color: var(--ink-900); }
+.pos-product-card .info .s { font-size: 14px; color: var(--ink-500); margin-top: 2px; }
+.pos-product-card .edit { color: var(--primary-500); font-weight: 700; font-size: 13px; cursor: pointer; }
+.pos-section-title {
+  padding: 0 20px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 12px;
+}
+.pos-times {
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.pos-time {
+  background: white;
+  border: 2px solid var(--ink-100);
+  border-radius: var(--r-md);
+  padding: 14px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pos-time.active {
+  border-color: var(--primary-500);
+  background: var(--primary-50);
+  box-shadow: var(--shadow-primary);
+}
+.pos-time .emoji { font-size: 28px; margin-bottom: 4px; }
+.pos-time .label { font-size: 13px; font-weight: 700; color: var(--ink-700); }
+.pos-time.active .label { color: var(--primary-600); }
+.pos-time .time { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
+.pos-quantity {
+  margin: 0 20px 22px;
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.pos-quantity .label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-500);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.pos-quantity .controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.pos-quantity .qbtn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--primary-100);
+  color: var(--primary-600);
+  border: none;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.pos-quantity .qbtn:active { transform: scale(0.92); }
+.pos-quantity .qval {
+  font-family: var(--font-display);
+  font-size: 50px;
+  font-weight: 600;
+  color: var(--ink-900);
+  line-height: 1;
+}
+.pos-quantity .qunit { font-size: 13px; color: var(--ink-500); margin-top: 4px; }
+.pos-meal {
+  margin: 0 20px 22px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.pos-meal-opt {
+  background: white;
+  border: 2px solid var(--ink-100);
+  border-radius: var(--r-md);
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+}
+.pos-meal-opt.active {
+  border-color: var(--primary-500);
+  background: var(--primary-50);
+}
+.pos-meal-opt .emoji { font-size: 26px; margin-bottom: 4px; }
+.pos-meal-opt .label { font-weight: 700; color: var(--ink-700); }
+.pos-duration {
+  margin: 0 20px 22px;
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.pos-duration .opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ink-100);
+  cursor: pointer;
+}
+.pos-duration .opt:last-child { border: none; }
+.pos-duration .opt .icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--bg-soft);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.pos-duration .opt .label { flex: 1; font-weight: 700; color: var(--ink-700); }
+.pos-duration .opt .arrow { color: var(--ink-300); }
+.pos-duration .opt.selected .icon { background: var(--primary-100); color: var(--primary-600); }
+.pos-duration .opt.selected .label { color: var(--primary-600); }
+
+/* RDV form */
+.rdv-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 100px;
+}
+.rdv-doctor-card {
+  margin: 0 20px 20px;
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.rdv-doctor-card .avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-300), var(--primary-500));
+  margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 38px;
+  box-shadow: var(--shadow-primary);
+}
+.rdv-time-slots { margin: 14px 20px 22px; }
+.rdv-time-slots .label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+.rdv-time-slots .slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.rdv-slot {
+  background: white;
+  border: 2px solid var(--ink-100);
+  border-radius: 14px;
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--ink-700);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.rdv-slot.active {
+  background: var(--primary-500);
+  border-color: var(--primary-500);
+  color: white;
+  box-shadow: var(--shadow-primary);
+}
+
+/* ========================================
+   RAPPEL (lockscreen)
+   ======================================== */
+.rappel-screen {
+  height: 100%;
+  background:
+    radial-gradient(circle at 30% 20%, #1e3a5f 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, #2d4a6f 0%, transparent 50%),
+    linear-gradient(180deg, #0f1b2d 0%, #1a2942 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 60px 20px 40px;
+  position: relative;
+}
+.rappel-time { text-align: center; margin-bottom: 8px; }
+.rappel-time .h {
+  font-family: var(--font-display);
+  font-size: 88px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.rappel-time .d {
+  font-size: 16px;
+  color: rgba(255,255,255,0.7);
+  margin-top: 4px;
+}
+.rappel-spacer { flex: 1; }
+.rappel-card {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 24px;
+  padding: 22px;
+  margin-bottom: 14px;
+}
+.rappel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.rappel-header .pulse {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--primary-400);
+  box-shadow: 0 0 0 6px rgba(77, 174, 236, 0.3);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(77, 174, 236, 0.3); }
+  50% { box-shadow: 0 0 0 14px rgba(77, 174, 236, 0); }
+}
+.rappel-header .label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+}
+.rappel-card h3 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+.rappel-meds {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 12px;
+}
+.rappel-meds .img {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fee, #fbbf24);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.rappel-meds .info { flex: 1; }
+.rappel-meds .info .n { font-weight: 700; font-size: 16px; }
+.rappel-meds .info .s { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+.rappel-meds .audio-btn {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--primary-500);
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+.rappel-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.rappel-action {
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 60px;
+  font-family: inherit;
+}
+.rappel-action.taken {
+  background: var(--success-500);
+  color: white;
+  box-shadow: var(--shadow-med);
+}
+.rappel-action.snooze {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+.rappel-call-family {
+  text-align: center;
+  margin-top: 16px;
+  color: rgba(255,255,255,0.85);
+  font-size: 14px;
+  font-weight: 600;
+}
+.rappel-call-family a { color: var(--primary-300); text-decoration: underline; cursor: pointer; }
+
+/* ========================================
+   HISTORIQUE (calendrier observance)
+   ======================================== */
+.hist-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 96px;
+}
+.hist-stats {
+  margin: 0 20px 22px;
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+  border-radius: var(--r-lg);
+  padding: 22px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.hist-stats::before {
+  content: '';
+  position: absolute;
+  top: -30%; right: -10%;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+}
+.hist-stats .label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 6px;
+}
+.hist-stats .pct {
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.hist-stats .desc { font-size: 14px; color: rgba(255,255,255,0.85); }
+.hist-stats .trend {
+  position: absolute;
+  bottom: 20px; right: 20px;
+  background: rgba(255,255,255,0.22);
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 700;
+}
+.hist-month {
+  margin: 0 20px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.hist-month h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+.hist-month .arrows { display: flex; gap: 6px; }
+.hist-month .arrow-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid var(--ink-100);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-700);
+  font-size: 16px;
+  cursor: pointer;
+}
+.hist-cal {
+  margin: 0 20px 22px;
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.hist-cal .week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+.hist-cal .week-days span {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-300);
+  text-transform: uppercase;
+}
+.hist-cal .days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.hist-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-700);
+}
+.hist-day.empty { color: var(--ink-200); }
+.hist-day.full { background: var(--success-500); color: white; }
+.hist-day.partial { background: var(--warn-500); color: white; }
+.hist-day.miss { background: var(--danger-100); color: var(--danger-500); }
+.hist-day.today {
+  border: 2px solid var(--primary-500);
+  background: var(--primary-50);
+  color: var(--primary-600);
+}
+.hist-legend {
+  margin: 0 20px 16px;
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--ink-500);
+}
+.hist-legend .item { display: flex; align-items: center; gap: 6px; }
+.hist-legend .item .dot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ========================================
+   BILAN — graph adhérence
+   ======================================== */
+.bilan-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 96px;
+}
+.bilan-hero {
+  background: linear-gradient(160deg, var(--primary-400), var(--primary-600));
+  margin: 0;
+  padding: 0 24px 36px;
+  border-radius: 0 0 32px 32px;
+  color: white;
+}
+.bilan-big {
+  text-align: center;
+  margin-top: 16px;
+}
+.bilan-big .lbl {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 4px;
+}
+.bilan-big .pct {
+  font-family: var(--font-display);
+  font-size: 80px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.bilan-big .sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  margin-top: 6px;
+}
+.bilan-chart {
+  margin: 22px 20px 0;
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 20px 16px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.bilan-chart h4 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 14px;
+}
+.bilan-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px;
+  height: 140px;
+  padding: 0 4px;
+  border-bottom: 1px dashed var(--ink-100);
+}
+.bilan-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.bilan-bar .col {
+  width: 100%;
+  background: linear-gradient(180deg, var(--primary-400), var(--primary-600));
+  border-radius: 6px 6px 0 0;
+  position: relative;
+  transition: height 0.4s ease;
+}
+.bilan-bar .col::after {
+  content: attr(data-pct) '%';
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-500);
+}
+.bilan-bar .lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-500);
+  margin-top: 4px;
+}
+.bilan-stat-grid {
+  margin: 16px 20px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-card {
+  background: white;
+  border-radius: var(--r-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+.stat-card .em { font-size: 24px; margin-bottom: 6px; }
+.stat-card .val {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+.stat-card .lbl { font-size: 11px; color: var(--ink-500); margin-top: 2px; }
+
+/* ========================================
+   SOS — urgence
+   ======================================== */
+.sos-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 96px;
+}
+.sos-banner {
+  margin: 0 20px 16px;
+  background: linear-gradient(135deg, var(--danger-500), #B91C1C);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-danger);
+  cursor: pointer;
+}
+.sos-banner .ic {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+  animation: sos-pulse 1.6s ease-in-out infinite;
+}
+@keyframes sos-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+  50% { box-shadow: 0 0 0 12px rgba(255,255,255,0); }
+}
+.sos-banner .info { flex: 1; }
+.sos-banner .info .t { font-weight: 700; font-size: 18px; margin-bottom: 4px; }
+.sos-banner .info .s { font-size: 13px; opacity: 0.9; }
+.contact-section-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin: 16px 20px 12px;
+}
+.contact-card {
+  margin: 0 20px 10px;
+  background: white;
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.15s;
+  border: none;
+  width: calc(100% - 40px);
+  font-family: inherit;
+  text-align: left;
+}
+.contact-card:active { transform: scale(0.98); }
+.contact-card .ic {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--primary-100);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.contact-card.med-doc .ic { background: var(--primary-100); color: var(--primary-600); }
+.contact-card.fam .ic { background: #FFE0E0; color: var(--danger-500); }
+.contact-card .info { flex: 1; }
+.contact-card .info .n { font-size: 16px; font-weight: 700; color: var(--ink-900); margin-bottom: 2px; }
+.contact-card .info .s { font-size: 13px; color: var(--ink-500); }
+.contact-card .call { font-size: 22px; color: var(--success-500); }
+
+/* PHARMA */
+.pharma-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 96px;
+}
+.pharma-banner {
+  margin: 0 20px 16px;
+  background: linear-gradient(135deg, var(--primary-100), var(--primary-50));
+  border-radius: var(--r-lg);
+  padding: 20px;
+  text-align: center;
+  border: 2px solid var(--primary-200);
+}
+.pharma-banner .em { font-size: 36px; margin-bottom: 8px; }
+.pharma-banner h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 4px;
+}
+.pharma-banner p { font-size: 14px; color: var(--ink-500); }
+.pharma-card {
+  margin: 0 20px 10px;
+  background: white;
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  border: none;
+  width: calc(100% - 40px);
+  font-family: inherit;
+  text-align: left;
+  transition: transform 0.15s;
+}
+.pharma-card:active { transform: scale(0.98); }
+.pharma-card .ic {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--med-100);
+  color: var(--med-500);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.pharma-card .info { flex: 1; }
+.pharma-card .info .n { font-size: 16px; font-weight: 700; color: var(--ink-900); margin-bottom: 2px; }
+.pharma-card .info .a { font-size: 13px; color: var(--ink-500); }
+.pharma-card .right { text-align: right; flex-shrink: 0; }
+.pharma-card .right .badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.pharma-card .right .badge.open { background: var(--med-100); color: #166534; }
+.pharma-card .right .badge.garde { background: var(--warn-100); color: #92400E; }
+.pharma-card .right .dist { font-size: 12px; color: var(--ink-500); font-weight: 600; }
+
+/* ========================================
+   PROFIL & RÉGLAGES
+   ======================================== */
+.profile-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 96px;
+}
+.profile-card {
+  margin: 0 20px 16px;
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.profile-avatar {
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-300), var(--primary-500));
+  margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 600;
+  box-shadow: var(--shadow-primary);
+}
+.profile-card .name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 4px;
+}
+.profile-card .phone { font-size: 14px; color: var(--ink-500); margin-bottom: 14px; }
+
+.settings-list {
+  margin: 0 20px 14px;
+  background: white;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--ink-100);
+  cursor: pointer;
+  background: white;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.15s;
+}
+.settings-item:last-child { border-bottom: none; }
+.settings-item:hover { background: var(--bg-soft); }
+.settings-item .ic {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.settings-item.s-bilan .ic { background: var(--primary-100); color: var(--primary-600); }
+.settings-item.s-hist .ic { background: var(--primary-100); color: var(--primary-600); }
+.settings-item.s-fam .ic { background: var(--warn-100); color: #92400E; }
+.settings-item.s-sos .ic { background: var(--danger-100); color: var(--danger-500); }
+.settings-item.s-lang .ic { background: var(--med-100); color: var(--med-500); }
+.settings-item.s-notif .ic { background: var(--primary-100); color: var(--primary-600); }
+.settings-item.s-help .ic { background: #F0EBFF; color: #7B61FF; }
+.settings-item .info { flex: 1; }
+.settings-item .info .n { font-size: 15px; font-weight: 700; color: var(--ink-900); }
+.settings-item .info .s { font-size: 12px; color: var(--ink-500); margin-top: 2px; }
+.settings-item .arrow { color: var(--ink-300); font-size: 20px; }
+
+.logout-btn {
+  margin: 14px 20px 0;
+  background: white;
+  border: 2px solid var(--danger-100);
+  color: var(--danger-500);
+  border-radius: var(--r-md);
+  padding: 14px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% - 40px);
+}
+
+/* SETTINGS - notif */
+.notif-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 32px;
+}
+.notif-group {
+  margin: 0 20px 16px;
+  background: white;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.notif-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--ink-100);
+}
+.notif-row:last-child { border: none; }
+.notif-row .info { flex: 1; }
+.notif-row .info .n { font-size: 15px; font-weight: 700; color: var(--ink-900); margin-bottom: 2px; }
+.notif-row .info .s { font-size: 12px; color: var(--ink-500); }
+.switch {
+  width: 50px; height: 30px;
+  background: var(--ink-200);
+  border-radius: 15px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  border: none;
+}
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 24px; height: 24px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s;
+}
+.switch.on { background: var(--primary-500); }
+.switch.on::after { transform: translateX(20px); }
+
+.notif-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-300);
+  margin: 14px 20px 8px;
+}
+
+/* HELP */
+.help-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 32px;
+}
+.help-banner {
+  margin: 0 20px 16px;
+  background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+  color: white;
+  border-radius: var(--r-lg);
+  padding: 22px;
+  text-align: center;
+}
+.help-banner .em { font-size: 40px; margin-bottom: 8px; }
+.help-banner h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.help-banner p { font-size: 13px; opacity: 0.9; line-height: 1.4; }
+.faq-item {
+  margin: 0 20px 10px;
+  background: white;
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.faq-item .q {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-900);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.faq-item.open .q .arrow { transform: rotate(180deg); }
+.faq-item .q .arrow { color: var(--ink-300); transition: transform 0.2s; }
+.faq-item .a {
+  font-size: 13px;
+  color: var(--ink-500);
+  line-height: 1.5;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ink-100);
+  display: none;
+}
+.faq-item.open .a { display: block; }
+
+.contact-help {
+  margin: 16px 20px 0;
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.contact-help .row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ink-100);
+}
+.contact-help .row:last-child { border: none; }
+.contact-help .ic {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--primary-100);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  color: var(--primary-600);
+}
+.contact-help .info { flex: 1; }
+.contact-help .info .n { font-size: 14px; font-weight: 700; color: var(--ink-900); }
+.contact-help .info .s { font-size: 12px; color: var(--ink-500); margin-top: 1px; }
+
+/* FAMILY */
+.fam-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 100px;
+}
+.fam-banner {
+  margin: 0 20px 16px;
+  background: white;
+  border-radius: var(--r-lg);
+  padding: 18px;
+  border: 2px solid var(--primary-200);
+  box-shadow: var(--shadow-sm);
+}
+.fam-banner .icon {
+  width: 50px; height: 50px;
+  border-radius: 14px;
+  background: var(--primary-100);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  color: var(--primary-600);
+  margin-bottom: 10px;
+}
+.fam-banner h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 6px;
+}
+.fam-banner p { color: var(--ink-500); font-size: 13px; line-height: 1.5; }
+.fam-banner .control-line {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ink-100);
+  color: var(--primary-600);
+  font-size: 13px;
+  font-weight: 700;
+}
+.fam-pref {
+  margin: 0 20px 10px;
+  background: white;
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.fam-pref .info { flex: 1; }
+.fam-pref .info .n { font-size: 14px; font-weight: 700; color: var(--ink-900); margin-bottom: 2px; }
+.fam-pref .info .s { font-size: 12px; color: var(--ink-500); line-height: 1.4; }
+.fam-section-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin: 14px 20px 10px;
+}
+.fam-add {
+  margin: 14px 20px;
+  background: white;
+  border: 2px dashed var(--primary-200);
+  border-radius: var(--r-md);
+  padding: 16px;
+  text-align: center;
+  color: var(--primary-600);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ADD PROCHE */
+.addproche-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  overflow-y: auto;
+  padding-bottom: 100px;
+}
+.proche-illust {
+  text-align: center;
+  padding: 20px 24px 8px;
+}
+.proche-illust .em { font-size: 60px; margin-bottom: 10px; }
+.proche-illust h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 6px;
+}
+.proche-illust p {
+  font-size: 14px;
+  color: var(--ink-500);
+  line-height: 1.5;
+}
+
+/* EMPTY STATES */
+.empty-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 96px;
+}
+.empty-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+}
+.empty-content .big {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: var(--primary-100);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 64px;
+  margin-bottom: 22px;
+}
+.empty-content h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+.empty-content p {
+  font-size: 15px;
+  color: var(--ink-500);
+  line-height: 1.55;
+  max-width: 280px;
+  margin-bottom: 24px;
+}
+
+/* ERROR STATES */
+.error-screen {
+  height: 100%;
+  background: var(--bg-soft);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 32px;
+}
+.error-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+  gap: 18px;
+}
+.error-icon {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: var(--danger-100);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 56px;
+}
+.error-content h2 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 6px;
+}
+.error-content p {
+  font-size: 15px;
+  color: var(--ink-500);
+  line-height: 1.55;
+  max-width: 260px;
+}
+.error-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 24px 24px;
+}
+
+/* ========================================
+   TOAST inside phone
+   ======================================== */
+.phone-toast {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--ink-900);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-lg);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s;
+  white-space: nowrap;
+  max-width: 320px;
+  opacity: 0;
+  pointer-events: none;
+}
+.phone-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.phone-toast .ico {
+  width: 18px; height: 18px;
+  background: var(--success-500);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.phone-toast.warn .ico { background: var(--warn-500); }
+.phone-toast.danger .ico { background: var(--danger-500); }
+
+/* ========================================
+   CALL OVERLAY
+   ======================================== */
+.call-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #1a4a3f 0%, #0f2e26 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 80px 32px 60px;
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s;
+}
+.call-overlay.show { opacity: 1; visibility: visible; }
+.caller-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 70px;
+  color: white;
+  font-weight: 700;
+  font-family: var(--font-display);
+  box-shadow: 0 20px 60px rgba(34, 197, 94, 0.4);
+  animation: caller-pulse 2s ease-in-out infinite;
+}
+@keyframes caller-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+.end-call {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--danger-500);
+  color: white;
+  border: none;
+  font-size: 30px;
+  cursor: pointer;
+  box-shadow: 0 12px 40px rgba(220, 38, 38, 0.45);
+  transition: transform 0.15s;
+  transform: rotate(135deg);
+}
+.end-call:active { transform: rotate(135deg) scale(0.92); }
+
+/* ========================================
+   MODAL — confirmation suppression
+   ======================================== */
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 27, 45, 0.55);
+  backdrop-filter: blur(6px);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s;
+}
+.modal-overlay.show { opacity: 1; visibility: visible; }
+.modal-card {
+  background: white;
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  transform: scale(0.92);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.modal-overlay.show .modal-card { transform: scale(1); }
+.modal-icon {
+  width: 80px; height: 80px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: var(--danger-100);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
+}
+.modal-card h3 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink-900);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.modal-card p {
+  font-size: 14px;
+  color: var(--ink-500);
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+.modal-card .btn { font-size: 17px; }
+.modal-card .btn:first-of-type { margin-bottom: 8px; }
+
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- LEFT — Brand & now showing -->
+  <aside class="stage-side">
+    <div class="brand-card">
+      <div class="brand-row">
+        <div class="brand-logo">
+          <img src="logo.png" alt="Dwaya" style="width:50px;height:50px">
+        </div>
+        <div>
+          <div class="brand-name">Dwaya</div>
+          <div class="brand-tag">Matnsach Dwak</div>
+        </div>
+      </div>
+      <div class="brand-eyebrow">Prototype interactif · V3</div>
+      <p class="lead">Toutes les fonctionnalités en un seul flux navigable. Cliquez sur les éléments du téléphone pour explorer comme une vraie app.</p>
+    </div>
+
+    <div class="now-showing" id="nowShowing">
+      <div class="ns-label">Écran affiché</div>
+      <div class="ns-title" id="nsTitle">Splash</div>
+      <div class="ns-desc" id="nsDesc">Page de lancement de l'app.</div>
+      <span class="ns-badge flow" id="nsBadge">Onboarding</span>
+    </div>
+  </aside>
+
+  <!-- CENTER — Phone -->
+  <div class="stage-phone">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status-bar" id="statusBar">
+        <span id="statusTime">9:41</span>
+        <span class="right">●●● 📶 🔋</span>
+      </div>
+      <div class="screen-host" id="screenHost"></div>
+
+      <!-- CALL OVERLAY -->
+      <div class="call-overlay" id="callOverlay">
+        <div style="text-align:center;color:white">
+          <div style="font-size:13px;letter-spacing:0.1em;text-transform:uppercase;opacity:0.7;margin-bottom:8px" id="callLabel">Appel en cours…</div>
+          <div style="font-family:var(--font-display);font-size:34px;font-weight:600" id="callName">Nadia</div>
+          <div style="font-size:16px;opacity:0.7;margin-top:4px" id="callSub">Ma fille</div>
+        </div>
+        <div class="caller-avatar" id="callAvatar">N</div>
+        <button class="end-call" onclick="endCall()" title="Raccrocher">📞</button>
+      </div>
+
+      <!-- TOAST inside phone -->
+      <div class="phone-toast" id="phoneToast">
+        <span class="ico" id="toastIco">✓</span>
+        <span id="toastMsg">Action effectuée</span>
+      </div>
+
+      <!-- DELETE CONFIRM MODAL -->
+      <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-card">
+          <div class="modal-icon" id="modalIcon">⚠️</div>
+          <h3 id="modalTitle">Supprimer ?</h3>
+          <p id="modalMsg">Cette action ne peut pas être annulée.</p>
+          <button class="btn btn-danger" onclick="confirmModal()">Oui, supprimer</button>
+          <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="phone-hint">
+      💡 Cliquez sur les éléments. Utilisez <kbd>←</kbd> <kbd>→</kbd> pour parcourir, <kbd>Esc</kbd> pour revenir.
+    </div>
+  </div>
+
+  <!-- RIGHT — Menu -->
+  <aside>
+    <div class="menu-card">
+      <div class="menu-title">Tous les écrans</div>
+      <div class="menu-sub">Sautez à n'importe quel écran</div>
+
+      <div class="menu-section">🚀 Onboarding</div>
+      <button class="menu-item" data-go="splash"><span class="ico">🔔</span><span class="name">Splash</span></button>
+      <button class="menu-item" data-go="langue"><span class="ico">🌍</span><span class="name">Choix langue</span></button>
+      <button class="menu-item" data-go="onb1"><span class="ico">📸</span><span class="name">Onboarding 1/3</span></button>
+      <button class="menu-item" data-go="onb2"><span class="ico">⏰</span><span class="name">Onboarding 2/3</span></button>
+      <button class="menu-item" data-go="onb3"><span class="ico">👨‍👩‍👧</span><span class="name">Onboarding 3/3</span></button>
+      <button class="menu-item" data-go="permNotif"><span class="ico">🔔</span><span class="name">Permission notifs</span></button>
+      <button class="menu-item" data-go="permCam"><span class="ico">📷</span><span class="name">Permission caméra</span></button>
+      <button class="menu-item" data-go="mode"><span class="ico">👤</span><span class="name">Patient ou aidant</span></button>
+
+      <div class="menu-section">🔐 Auth</div>
+      <button class="menu-item" data-go="signup"><span class="ico">✏️</span><span class="name">Créer un compte</span></button>
+      <button class="menu-item" data-go="login"><span class="ico">🔑</span><span class="name">Se connecter</span></button>
+      <button class="menu-item" data-go="forgot"><span class="ico">❓</span><span class="name">Mot de passe oublié</span></button>
+      <button class="menu-item" data-go="verify"><span class="ico">🔢</span><span class="name">Vérification OTP</span></button>
+      <button class="menu-item" data-go="welcome"><span class="ico">🎉</span><span class="name">Bienvenue</span></button>
+
+      <div class="menu-section">🏠 App principale</div>
+      <button class="menu-item" data-go="home"><span class="ico">🏠</span><span class="name">Aujourd'hui (Home)</span></button>
+      <button class="menu-item" data-go="listMed"><span class="ico">💊</span><span class="name">Mes médicaments</span></button>
+      <button class="menu-item" data-go="emptyMed"><span class="ico">📭</span><span class="name">Empty: aucun médic.</span></button>
+      <button class="menu-item" data-go="detailMed"><span class="ico">📋</span><span class="name">Détail médicament</span></button>
+      <button class="menu-item" data-go="editMed"><span class="ico">✏️</span><span class="name">Édition médicament</span></button>
+      <button class="menu-item" data-go="listRdv"><span class="ico">📅</span><span class="name">Mes rendez-vous</span></button>
+      <button class="menu-item" data-go="emptyRdv"><span class="ico">📭</span><span class="name">Empty: aucun RDV</span></button>
+      <button class="menu-item" data-go="detailRdv"><span class="ico">🩺</span><span class="name">Détail rendez-vous</span></button>
+      <button class="menu-item" data-go="editRdv"><span class="ico">✏️</span><span class="name">Édition rendez-vous</span></button>
+
+      <div class="menu-section">➕ Ajouts</div>
+      <button class="menu-item" data-go="scan"><span class="ico">📷</span><span class="name">Photo de la boîte</span></button>
+      <button class="menu-item" data-go="posologie"><span class="ico">💊</span><span class="name">Posologie</span></button>
+      <button class="menu-item" data-go="addRdv"><span class="ico">🩺</span><span class="name">Nouveau rendez-vous</span></button>
+
+      <div class="menu-section">⏰ Rappels & Suivi</div>
+      <button class="menu-item" data-go="rappel"><span class="ico">⏰</span><span class="name">Rappel (lockscreen)</span></button>
+      <button class="menu-item" data-go="historique"><span class="ico">📅</span><span class="name">Calendrier observance</span></button>
+      <button class="menu-item" data-go="bilan"><span class="ico">📊</span><span class="name">Bilan détaillé</span></button>
+
+      <div class="menu-section">🆘 Urgence Maroc</div>
+      <button class="menu-item" data-go="sos"><span class="ico">🆘</span><span class="name">SOS &amp; contacts</span></button>
+      <button class="menu-item" data-go="pharma"><span class="ico">💊</span><span class="name">Pharmacies de garde</span></button>
+      <button class="menu-item" data-go="detailPharma"><span class="ico">📍</span><span class="name">Détail pharmacie</span></button>
+
+      <div class="menu-section">⚙️ Profil &amp; réglages</div>
+      <button class="menu-item" data-go="profile"><span class="ico">👤</span><span class="name">Mon profil</span></button>
+      <button class="menu-item" data-go="editProfile"><span class="ico">✏️</span><span class="name">Modifier profil</span></button>
+      <button class="menu-item" data-go="settingsNotif"><span class="ico">🔔</span><span class="name">Réglages notifs</span></button>
+      <button class="menu-item" data-go="settingsLang"><span class="ico">🌍</span><span class="name">Changer langue</span></button>
+      <button class="menu-item" data-go="help"><span class="ico">❓</span><span class="name">Aide &amp; support</span></button>
+      <button class="menu-item" data-go="famille"><span class="ico">🤝</span><span class="name">Partage familial</span></button>
+      <button class="menu-item" data-go="addProche"><span class="ico">➕</span><span class="name">Ajouter un proche</span></button>
+
+      <div class="menu-section">⚠️ États d'erreur</div>
+      <button class="menu-item" data-go="errOffline"><span class="ico">📡</span><span class="name">Pas de connexion</span></button>
+      <button class="menu-item" data-go="errBlur"><span class="ico">📷</span><span class="name">Photo floue</span></button>
+
+      <button class="reset-btn" onclick="goTo('splash'); showToast('Prototype réinitialisé')">↺ Réinitialiser</button>
+    </div>
+  </aside>
+
+</div>
+<!-- =========================================
+     SCREEN TEMPLATES — PART 1: Onboarding
+     ========================================= -->
+
+<!-- ========== 01 SPLASH (matches the image) ========== -->
+<template id="tpl-splash">
+  <div class="splash">
+    <div class="splash-bg-pattern">
+      <svg viewBox="0 0 380 760" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <g fill="#4DAEEC">
+          <text x="20" y="80" font-size="44">🚑</text>
+          <text x="290" y="120" font-size="44">🩺</text>
+          <text x="40" y="180" font-size="36">💊</text>
+          <text x="310" y="220" font-size="32">🧪</text>
+          <text x="20" y="320" font-size="40">➕</text>
+          <text x="280" y="370" font-size="30">🩹</text>
+          <text x="50" y="460" font-size="36">🏥</text>
+          <text x="290" y="520" font-size="40">💉</text>
+          <text x="30" y="600" font-size="32">🩺</text>
+          <text x="290" y="680" font-size="36">💊</text>
+          <text x="170" y="730" font-size="28">➕</text>
+        </g>
+      </svg>
+    </div>
+    <div style="height:8px"></div>
+    <div class="splash-logo-area">
+      <div class="splash-bell">
+        <img src="logo.png" alt="" style="width:100%;height:100%;object-fit:contain">
+      </div>
+      <div class="splash-name">Dwaya</div>
+    </div>
+    <div class="splash-actions">
+      <button class="btn btn-primary" data-action="go:login">Se connecter</button>
+      <button class="btn btn-secondary" data-action="go:langue">S'inscrire</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 02 LANGUE ========== -->
+<template id="tpl-langue">
+  <div class="lang-screen">
+    <div class="top-bar" style="padding:0 0 12px"><button class="back-btn" data-action="back">←</button><h2>Langue</h2><div style="width:44px"></div></div>
+    <div class="lang-header">
+      <div class="glob">🌍</div>
+      <h2>Choisir la langue</h2>
+      <div class="ar">اختار اللغة</div>
+    </div>
+    <button class="lang-tile selected" data-pick-lang>
+      <span class="flag">🇲🇦</span>
+      <div class="nm"><div class="n arabic">الدارجة</div><div class="s">Darija (audio) 🔊</div></div>
+      <span class="check"></span>
+    </button>
+    <button class="lang-tile" data-pick-lang>
+      <span class="flag">🇫🇷</span>
+      <div class="nm"><div class="n">Français</div><div class="s">Français</div></div>
+      <span class="check"></span>
+    </button>
+    <button class="lang-tile" data-pick-lang>
+      <span class="flag">🇲🇦</span>
+      <div class="nm"><div class="n arabic">العربية</div><div class="s">Arabe</div></div>
+      <span class="check"></span>
+    </button>
+    <div style="flex:1"></div>
+    <button class="btn btn-primary" data-action="go:onb1">Continuer 🔊</button>
+  </div>
+</template>
+
+<!-- ========== 03 ONB 1 ========== -->
+<template id="tpl-onb1">
+  <div class="onb-screen">
+    <button class="onb-skip" data-action="go:mode">Passer</button>
+    <div class="onb-illust">
+      <div class="big-emoji">📸</div>
+      <h1>Photographie ton médicament</h1>
+      <p>Prends une photo de la boîte.<br>Pas besoin d'écrire son nom.</p>
+      <button class="onb-listen" data-action="speak">🔊 Écouter</button>
+    </div>
+    <div class="onb-dots"><span class="d active"></span><span class="d"></span><span class="d"></span></div>
+    <button class="btn btn-primary" data-action="go:onb2">Suivant →</button>
+  </div>
+</template>
+
+<!-- ========== 04 ONB 2 ========== -->
+<template id="tpl-onb2">
+  <div class="onb-screen">
+    <button class="onb-skip" data-action="go:mode">Passer</button>
+    <div class="onb-illust">
+      <div class="big-emoji">⏰</div>
+      <h1>On te rappelle l'heure</h1>
+      <p>Matin, midi, soir.<br>Avec photo et voix.</p>
+      <button class="onb-listen" data-action="speak">🔊 Écouter</button>
+    </div>
+    <div class="onb-dots"><span class="d"></span><span class="d active"></span><span class="d"></span></div>
+    <button class="btn btn-primary" data-action="go:onb3">Suivant →</button>
+  </div>
+</template>
+
+<!-- ========== 05 ONB 3 ========== -->
+<template id="tpl-onb3">
+  <div class="onb-screen">
+    <div class="onb-illust">
+      <div class="big-emoji">👨‍👩‍👧</div>
+      <h1>Avec un proche</h1>
+      <p>Ton fils ou ta fille peut t'aider à configurer l'app à distance.</p>
+      <button class="onb-listen" data-action="speak">🔊 Écouter</button>
+    </div>
+    <div class="onb-dots"><span class="d"></span><span class="d"></span><span class="d active"></span></div>
+    <button class="btn btn-primary" data-action="go:permNotif">Commencer ✨</button>
+  </div>
+</template>
+
+<!-- ========== 06 PERM NOTIF ========== -->
+<template id="tpl-permNotif">
+  <div class="perm-screen">
+    <div class="perm-illust">
+      <div class="perm-icon-circle">🔔</div>
+      <h1>On peut t'envoyer des rappels ?</h1>
+      <p>Pour ne jamais oublier l'heure de ton médicament.</p>
+      <div class="perm-bullets">
+        <div class="perm-bullet"><div class="ic">⏰</div><div class="tx">Rappels matin / midi / soir</div></div>
+        <div class="perm-bullet"><div class="ic">🔇</div><div class="tx">Tu peux les couper à tout moment</div></div>
+        <div class="perm-bullet"><div class="ic">🤝</div><div class="tx">Aucune publicité, jamais</div></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" data-action="permNotifAccept">Autoriser les rappels</button>
+    <button class="btn btn-ghost" style="margin-top:6px" data-action="go:permCam">Plus tard</button>
+  </div>
+</template>
+
+<!-- ========== 07 PERM CAM ========== -->
+<template id="tpl-permCam">
+  <div class="perm-screen">
+    <div class="perm-illust">
+      <div class="perm-icon-circle">📷</div>
+      <h1>Accès à l'appareil photo ?</h1>
+      <p>Pour photographier la boîte de ton médicament et le reconnaître automatiquement.</p>
+      <div class="perm-bullets">
+        <div class="perm-bullet"><div class="ic">📦</div><div class="tx">On photographie seulement la boîte</div></div>
+        <div class="perm-bullet"><div class="ic">🔒</div><div class="tx">Les photos restent sur ton téléphone</div></div>
+        <div class="perm-bullet"><div class="ic">⌨️</div><div class="tx">Tu peux aussi saisir le nom à la main</div></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" data-action="permCamAccept">Autoriser la caméra</button>
+    <button class="btn btn-ghost" style="margin-top:6px" data-action="go:mode">Plus tard</button>
+  </div>
+</template>
+
+<!-- ========== 08 MODE — patient ou aidant ========== -->
+<template id="tpl-mode">
+  <div class="mode-screen">
+    <h1>Tu es...</h1>
+    <div class="sub">Choisis ton mode pour adapter l'app</div>
+    <button class="mode-card selected" data-pick-mode="patient">
+      <div class="ic">👵</div>
+      <div class="info">
+        <div class="t">Je suis le patient</div>
+        <div class="d">Je veux prendre mes médicaments à l'heure et ne rien oublier.</div>
+      </div>
+    </button>
+    <button class="mode-card" data-pick-mode="aidant">
+      <div class="ic">👨‍👩‍👧</div>
+      <div class="info">
+        <div class="t">Je suis un proche</div>
+        <div class="d">J'aide ma maman, mon papa ou un proche à gérer ses traitements.</div>
+      </div>
+    </button>
+    <div style="flex:1;min-height:20px"></div>
+    <button class="btn btn-primary" data-action="go:signup">Continuer →</button>
+    <button class="btn btn-ghost" style="margin-top:6px" data-action="go:login">J'ai déjà un compte</button>
+  </div>
+</template>
+<!-- ========== 09 SIGNUP ========== -->
+<template id="tpl-signup">
+  <div class="auth-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Créer mon compte</h2><button class="voice-btn" data-action="speak">🔊</button></div>
+    <div class="auth-hero" style="padding-top:8px">
+      <div class="bell-mini">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="42" r="28" fill="#4DAEEC"/>
+          <path d="M50 14 Q42 14 42 22 L42 26 L58 26 L58 22 Q58 14 50 14Z" fill="#4DAEEC"/>
+          <path d="M22 70 Q22 60 50 60 Q78 60 78 70 L78 76 Q50 80 22 76 Z" fill="#4DAEEC"/>
+          <ellipse cx="50" cy="86" rx="8" ry="6" fill="#4DAEEC"/>
+        </svg>
+      </div>
+      <h1>Bienvenue !</h1>
+      <p>Créons ton compte en 30 secondes</p>
+    </div>
+    <div class="auth-form">
+      <div class="field">
+        <label>Comment tu t'appelles ?</label>
+        <div class="field-input"><i class="icon">👤</i><input placeholder="Ton prénom" value="Asma"></div>
+      </div>
+      <div class="field">
+        <label>Numéro de téléphone</label>
+        <div class="field-input"><i class="icon">📞</i><input placeholder="06 XX XX XX XX" value="06 33 67 38 91"></div>
+      </div>
+      <div class="field">
+        <label>Mot de passe</label>
+        <div class="field-input"><i class="icon">🔒</i><input type="password" placeholder="••••••" value="••••••"></div>
+      </div>
+      <div style="padding:0 20px 16px">
+        <button class="btn btn-primary" data-action="go:verify">S'inscrire →</button>
+      </div>
+      <div class="auth-link">Déjà un compte ? <a data-action="go:login">Se connecter</a></div>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 10 LOGIN ========== -->
+<template id="tpl-login">
+  <div class="auth-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Se connecter</h2><button class="voice-btn" data-action="speak">🔊</button></div>
+    <div class="auth-hero" style="padding-top:8px">
+      <div class="bell-mini">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="42" r="28" fill="#4DAEEC"/>
+          <path d="M50 14 Q42 14 42 22 L42 26 L58 26 L58 22 Q58 14 50 14Z" fill="#4DAEEC"/>
+          <path d="M22 70 Q22 60 50 60 Q78 60 78 70 L78 76 Q50 80 22 76 Z" fill="#4DAEEC"/>
+          <ellipse cx="50" cy="86" rx="8" ry="6" fill="#4DAEEC"/>
+        </svg>
+      </div>
+      <h1>Content de te revoir</h1>
+      <p>Connecte-toi à ton compte Dwaya</p>
+    </div>
+    <div class="auth-form">
+      <div class="field">
+        <label>Numéro de téléphone</label>
+        <div class="field-input"><i class="icon">📞</i><input placeholder="06 XX XX XX XX" value="06 33 67 38 91"></div>
+      </div>
+      <div class="field">
+        <label>Mot de passe</label>
+        <div class="field-input"><i class="icon">🔒</i><input type="password" value="••••••"></div>
+      </div>
+      <button class="auth-forgot" data-action="go:forgot">Mot de passe oublié ?</button>
+      <div style="padding:0 20px 12px">
+        <button class="btn btn-primary" data-action="go:home">Se connecter →</button>
+      </div>
+      <div class="auth-link">Pas encore de compte ? <a data-action="go:signup">Créer un compte</a></div>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 11 FORGOT PWD ========== -->
+<template id="tpl-forgot">
+  <div class="auth-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Mot de passe oublié</h2><button class="voice-btn" data-action="speak">🔊</button></div>
+    <div class="auth-hero" style="padding-top:16px">
+      <div class="bell-mini" style="font-size:50px;display:flex;align-items:center;justify-content:center">🔑</div>
+      <h1>Pas de panique</h1>
+      <p>On va t'aider à retrouver l'accès à ton compte</p>
+    </div>
+    <div class="auth-form">
+      <div class="field">
+        <label>Numéro de téléphone</label>
+        <div class="field-input"><i class="icon">📞</i><input placeholder="06 XX XX XX XX" value="06 33 67 38 91"></div>
+      </div>
+      <p style="padding:0 20px;font-size:13px;color:var(--ink-500);line-height:1.5;margin-bottom:14px">On va t'envoyer un code par SMS pour vérifier ton numéro et créer un nouveau mot de passe.</p>
+      <div style="padding:0 20px 12px">
+        <button class="btn btn-primary" data-action="go:verify">Recevoir le code SMS</button>
+      </div>
+      <div class="auth-link">Tu te souviens ? <a data-action="go:login">Retour à la connexion</a></div>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 12 VERIFY OTP ========== -->
+<template id="tpl-verify">
+  <div class="auth-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Vérification</h2><button class="voice-btn" data-action="speak">🔊</button></div>
+    <div class="auth-hero" style="padding-top:16px">
+      <div class="bell-mini" style="width:90px;height:90px;border-radius:50%;background:var(--primary-100);font-size:44px;display:flex;align-items:center;justify-content:center">🔒</div>
+      <h1>Code de vérification</h1>
+      <p>On a envoyé un code au<br><strong>06 33 XX XX 91</strong></p>
+    </div>
+    <div class="otp-boxes">
+      <input class="filled" maxlength="1" value="3">
+      <input class="filled" maxlength="1" value="9">
+      <input class="filled" maxlength="1" value="2">
+      <input class="filled" maxlength="1" value="1">
+      <input maxlength="1" placeholder="•">
+    </div>
+    <button class="btn btn-ghost" style="margin:-8px 20px 16px;font-size:14px" data-action="resendOtp">Renvoyer le code</button>
+    <div style="padding:0 20px">
+      <button class="btn btn-primary" data-action="go:welcome">Valider ✓</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 13 WELCOME ========== -->
+<template id="tpl-welcome">
+  <div class="auth-screen" style="display:flex;flex-direction:column">
+    <div class="auth-success">
+      <div class="success-circle">✓</div>
+      <h1>Bienvenue, Asma !</h1>
+      <p>Ton compte a été créé.<br>On va t'aider à ne plus rien oublier.</p>
+    </div>
+    <div style="padding:0 20px 24px">
+      <button class="btn btn-primary" data-action="go:home">Aller à l'accueil →</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 14 HOME ========== -->
+<template id="tpl-home">
+  <div class="home">
+    <div class="home-hero">
+      <div class="home-greeting">
+        <div class="greet-text">
+          <div class="hello">Bonjour 👋</div>
+          <div class="name">Asma</div>
+        </div>
+        <div class="actions">
+          <button class="icon-btn" data-action="notif">🔔<span class="badge-dot"></span></button>
+          <button class="icon-btn" data-action="go:profile">👤</button>
+        </div>
+      </div>
+      <div class="next-rappel-card" data-action="go:rappel">
+        <div class="nrc-label">⏰ Prochain rappel</div>
+        <div class="nrc-time">13:00</div>
+        <div class="nrc-meds">
+          <div class="pill-icon">💊</div>
+          <div class="info">
+            <div class="n1">Doliprane 500mg</div>
+            <div class="n2">1 comprimé · après le repas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="home-quickactions">
+      <button class="qa-tile med" data-action="go:scan">
+        <div class="qa-icon">💊</div>
+        <div class="qa-label">Médicament</div>
+      </button>
+      <button class="qa-tile rdv" data-action="go:addRdv">
+        <div class="qa-icon">🩺</div>
+        <div class="qa-label">Rendez-vous</div>
+      </button>
+      <button class="qa-tile sos" data-action="go:sos">
+        <div class="qa-icon">🆘</div>
+        <div class="qa-label">Urgence</div>
+      </button>
+    </div>
+    <div class="home-section">
+      <div class="section-head">
+        <h3>Aujourd'hui</h3>
+        <a data-action="go:listMed">Voir tout</a>
+      </div>
+      <button class="med-row taken" data-action="go:detailMed">
+        <div class="left-bar"></div>
+        <div class="info">
+          <div class="n">Doliprane 500mg</div>
+          <div class="s">⛅ Matin · après repas</div>
+        </div>
+        <div class="status-pill">✓ Pris</div>
+      </button>
+      <button class="med-row upcoming" data-action="go:rappel">
+        <div class="left-bar"></div>
+        <div class="info">
+          <div class="n">Amoxicilline 1g</div>
+          <div class="s">☀️ Midi · avant repas</div>
+        </div>
+        <div class="status-pill">À 13:00</div>
+      </button>
+      <button class="med-row upcoming" data-action="go:detailMed">
+        <div class="left-bar"></div>
+        <div class="info">
+          <div class="n">Glucophage 500</div>
+          <div class="s">🌒 Soir · après repas</div>
+        </div>
+        <div class="status-pill">À 20:00</div>
+      </button>
+    </div>
+    <div class="home-section">
+      <div class="section-head">
+        <h3>Prochain RDV</h3>
+        <a data-action="go:listRdv">Voir tout</a>
+      </div>
+      <button class="rdv-card" data-action="go:detailRdv">
+        <div class="doc-avatar">🩺</div>
+        <div class="info">
+          <div class="n">Dr. Brahim El Alami</div>
+          <div class="s">Sam. 12 juillet · 10h30 · Cardiologue</div>
+        </div>
+        <div class="arrow">›</div>
+      </button>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item active" data-action="go:home"><span class="ico">🏠</span><span>Aujourd'hui</span></button>
+    <button class="nav-item" data-action="go:listMed"><span class="ico">💊</span><span>Médic.</span></button>
+    <button class="nav-item" data-action="go:listRdv"><span class="ico">📅</span><span>RDV</span></button>
+    <button class="nav-item" data-action="go:profile"><span class="ico">👤</span><span>Moi</span></button>
+  </div>
+</template>
+
+<!-- ========== 15 LIST MEDICAMENTS ========== -->
+<template id="tpl-listMed">
+  <div class="list-screen">
+    <div class="list-header">
+      <h1>Médicaments</h1>
+      <button class="list-add" data-action="go:scan">+</button>
+    </div>
+    <div class="list-tabs">
+      <button class="list-tab active" data-tab="actifs">Actifs (3)</button>
+      <button class="list-tab" data-tab="termines">Terminés</button>
+    </div>
+    <div class="list-content">
+      <button class="med-card" data-action="go:detailMed">
+        <div class="pill-img">💊</div>
+        <div class="info">
+          <div class="n">Doliprane 500mg</div>
+          <div class="s">1 comprimé · matin, après repas</div>
+          <div class="t">📅 Traitement continu</div>
+        </div>
+        <div class="arrow">›</div>
+      </button>
+      <button class="med-card" data-action="go:detailMed">
+        <div class="pill-img" style="background:linear-gradient(135deg,#fde,#f9a8d4)">💊</div>
+        <div class="info">
+          <div class="n">Amoxicilline 1g</div>
+          <div class="s">1 comprimé · midi, avant repas</div>
+          <div class="t">📅 Jusqu'au 28 mai (5 jours restants)</div>
+        </div>
+        <div class="arrow">›</div>
+      </button>
+      <button class="med-card" data-action="go:detailMed">
+        <div class="pill-img" style="background:linear-gradient(135deg,#dde,#a5b4fc)">💊</div>
+        <div class="info">
+          <div class="n">Glucophage 500</div>
+          <div class="s">1 comprimé · soir, après repas</div>
+          <div class="t">📅 Traitement continu</div>
+        </div>
+        <div class="arrow">›</div>
+      </button>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" data-action="go:home"><span class="ico">🏠</span><span>Aujourd'hui</span></button>
+    <button class="nav-item active" data-action="go:listMed"><span class="ico">💊</span><span>Médic.</span></button>
+    <button class="nav-item" data-action="go:listRdv"><span class="ico">📅</span><span>RDV</span></button>
+    <button class="nav-item" data-action="go:profile"><span class="ico">👤</span><span>Moi</span></button>
+  </div>
+</template>
+
+<!-- ========== 16 EMPTY MED ========== -->
+<template id="tpl-emptyMed">
+  <div class="empty-screen">
+    <div class="list-header">
+      <h1>Médicaments</h1>
+      <button class="list-add" data-action="go:scan">+</button>
+    </div>
+    <div class="empty-content">
+      <div class="big">💊</div>
+      <h2>Aucun médicament</h2>
+      <p>Ajoute ton premier médicament pour qu'on puisse te rappeler de le prendre.</p>
+      <div style="width:100%;max-width:280px">
+        <button class="btn btn-primary" data-action="go:scan">+ Ajouter mon premier médicament</button>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" data-action="go:home"><span class="ico">🏠</span><span>Aujourd'hui</span></button>
+    <button class="nav-item active" data-action="go:listMed"><span class="ico">💊</span><span>Médic.</span></button>
+    <button class="nav-item" data-action="go:listRdv"><span class="ico">📅</span><span>RDV</span></button>
+    <button class="nav-item" data-action="go:profile"><span class="ico">👤</span><span>Moi</span></button>
+  </div>
+</template>
+
+<!-- ========== 17 DETAIL MEDICAMENT ========== -->
+<template id="tpl-detailMed">
+  <div class="detail-screen">
+    <div class="detail-hero">
+      <div class="top-row">
+        <button class="back-btn" data-action="back">←</button>
+        <div class="actions">
+          <button class="icon-btn" data-action="speak">🔊</button>
+          <button class="icon-btn" data-action="go:editMed">✏️</button>
+        </div>
+      </div>
+      <div class="pill-img-lg">💊</div>
+      <h1>Doliprane 500mg</h1>
+      <div class="sub">Paracétamol · Antalgique</div>
+    </div>
+    <div class="detail-info-grid">
+      <div class="info-tile"><div class="lbl">Quantité</div><div class="val"><span class="em">💊</span>1 cp</div></div>
+      <div class="info-tile"><div class="lbl">Repas</div><div class="val"><span class="em">🍽️</span>Après</div></div>
+      <div class="info-tile"><div class="lbl">Durée</div><div class="val"><span class="em">♾️</span>Continu</div></div>
+      <div class="info-tile"><div class="lbl">Stock</div><div class="val"><span class="em">📦</span>14 cp</div></div>
+    </div>
+    <div class="detail-section">
+      <div class="section-title">Heures de prise</div>
+      <div class="detail-time-list">
+        <div class="time-row"><span class="em">⛅</span><span class="lbl">Matin</span><span class="hh">08:00</span></div>
+        <div class="time-row"><span class="em">☀️</span><span class="lbl">Midi</span><span class="hh">13:00</span></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="section-title">Cette semaine</div>
+      <div class="detail-time-list">
+        <div class="time-row"><span class="em">✅</span><span class="lbl">Pris à l'heure</span><span class="hh" style="color:var(--success-500)">12 / 14</span></div>
+        <div class="time-row"><span class="em">⚠️</span><span class="lbl">Manqués</span><span class="hh" style="color:var(--danger-500)">2</span></div>
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-secondary" data-action="go:editMed">✏️ Modifier</button>
+      <div class="danger-zone">
+        <button class="btn btn-ghost danger" data-action="confirmDeleteMed">🗑️ Supprimer ce médicament</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 18 EDIT MEDIC ========== -->
+<template id="tpl-editMed">
+  <div class="pos-screen">
+    <div class="top-bar">
+      <button class="back-btn" data-action="back">←</button>
+      <h2>Modifier le médicament</h2>
+      <div style="width:44px"></div>
+    </div>
+    <div class="pos-product-card">
+      <div class="img">💊</div>
+      <div class="info">
+        <div class="n">Doliprane 500mg</div>
+        <div class="s">Paracétamol</div>
+      </div>
+      <div class="edit">✏️</div>
+    </div>
+    <div class="pos-section-title">Quand le prendre ?</div>
+    <div class="pos-times">
+      <div class="pos-time active" data-toggle="time"><div class="emoji">⛅</div><div class="label">Matin</div><div class="time">08:00</div></div>
+      <div class="pos-time active" data-toggle="time"><div class="emoji">☀️</div><div class="label">Midi</div><div class="time">13:00</div></div>
+      <div class="pos-time" data-toggle="time"><div class="emoji">🌒</div><div class="label">Soir</div><div class="time">20:00</div></div>
+    </div>
+    <div class="pos-quantity">
+      <div class="label">Quantité par prise</div>
+      <div class="controls">
+        <button class="qbtn" data-action="qty-minus">−</button>
+        <div style="text-align:center">
+          <div class="qval" id="qtyVal">1</div>
+          <div class="qunit" id="qtyUnit">comprimé</div>
+        </div>
+        <button class="qbtn" data-action="qty-plus">+</button>
+      </div>
+    </div>
+    <div class="pos-section-title">Par rapport au repas</div>
+    <div class="pos-meal">
+      <button class="pos-meal-opt" data-pick-meal="avant"><div class="emoji">🥗</div><div class="label">Avant</div></button>
+      <button class="pos-meal-opt active" data-pick-meal="apres"><div class="emoji">🍽️</div><div class="label">Après</div></button>
+    </div>
+    <div class="bottom-cta">
+      <button class="btn btn-primary" data-action="saveMedEdit">Enregistrer les modifications</button>
+      <button class="btn btn-ghost danger" data-action="confirmDeleteMed">🗑️ Supprimer</button>
+    </div>
+  </div>
+</template>
+<!-- ========== 19 LIST RDV ========== -->
+<template id="tpl-listRdv">
+  <div class="list-screen">
+    <div class="list-header">
+      <h1>Rendez-vous</h1>
+      <button class="list-add" data-action="go:addRdv">+</button>
+    </div>
+    <div class="list-content">
+      <div class="list-day-label">À venir</div>
+      <button class="med-card" data-action="go:detailRdv">
+        <div class="pill-img" style="background:linear-gradient(135deg,var(--primary-300),var(--primary-500));color:white">🩺</div>
+        <div class="info">
+          <div class="n">Dr. Brahim El Alami</div>
+          <div class="s">Cardiologue · Rabat</div>
+          <div class="t">📅 Sam. 12 juillet · 10h30</div>
+        </div>
+        <div class="arrow">›</div>
+      </button>
+      <button class="med-card" data-action="go:detailRdv">
+        <div class="pill-img" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);color:white">👁️</div>
+        <div class="info">
+          <div class="n">Dr. Najma Tazi</div>
+          <div class="s">Ophtalmologue · Salé</div>
+          <div class="t">📅 Mer. 25 juillet · 15h00</div>
+        </div>
+        <div class="arrow">›</div>
+      </button>
+      <div class="list-day-label">Passés</div>
+      <button class="med-card" style="opacity:0.6" data-action="go:detailRdv">
+        <div class="pill-img" style="background:#e5e7eb;color:var(--ink-500)">🦷</div>
+        <div class="info">
+          <div class="n">Dr. Karim Benani</div>
+          <div class="s">Dentiste · Rabat</div>
+          <div class="t">📅 Lun. 5 mai · 14h00</div>
+        </div>
+        <div class="arrow">›</div>
+      </button>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" data-action="go:home"><span class="ico">🏠</span><span>Aujourd'hui</span></button>
+    <button class="nav-item" data-action="go:listMed"><span class="ico">💊</span><span>Médic.</span></button>
+    <button class="nav-item active" data-action="go:listRdv"><span class="ico">📅</span><span>RDV</span></button>
+    <button class="nav-item" data-action="go:profile"><span class="ico">👤</span><span>Moi</span></button>
+  </div>
+</template>
+
+<!-- ========== 20 EMPTY RDV ========== -->
+<template id="tpl-emptyRdv">
+  <div class="empty-screen">
+    <div class="list-header">
+      <h1>Rendez-vous</h1>
+      <button class="list-add" data-action="go:addRdv">+</button>
+    </div>
+    <div class="empty-content">
+      <div class="big">📅</div>
+      <h2>Aucun rendez-vous</h2>
+      <p>Ajoute un rendez-vous médical pour ne pas l'oublier et recevoir un rappel.</p>
+      <div style="width:100%;max-width:280px">
+        <button class="btn btn-primary" data-action="go:addRdv">+ Ajouter un rendez-vous</button>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" data-action="go:home"><span class="ico">🏠</span><span>Aujourd'hui</span></button>
+    <button class="nav-item" data-action="go:listMed"><span class="ico">💊</span><span>Médic.</span></button>
+    <button class="nav-item active" data-action="go:listRdv"><span class="ico">📅</span><span>RDV</span></button>
+    <button class="nav-item" data-action="go:profile"><span class="ico">👤</span><span>Moi</span></button>
+  </div>
+</template>
+
+<!-- ========== 21 DETAIL RDV ========== -->
+<template id="tpl-detailRdv">
+  <div class="detail-screen">
+    <div class="detail-hero">
+      <div class="top-row">
+        <button class="back-btn" data-action="back">←</button>
+        <div class="actions">
+          <button class="icon-btn" data-action="speak">🔊</button>
+          <button class="icon-btn" data-action="go:editRdv">✏️</button>
+        </div>
+      </div>
+      <div class="pill-img-lg">🩺</div>
+      <h1>Dr. Brahim El Alami</h1>
+      <div class="sub">Cardiologue</div>
+    </div>
+    <div class="detail-info-grid">
+      <div class="info-tile"><div class="lbl">Date</div><div class="val"><span class="em">📅</span>12 juil.</div></div>
+      <div class="info-tile"><div class="lbl">Heure</div><div class="val"><span class="em">⏰</span>10h30</div></div>
+    </div>
+    <div class="detail-section">
+      <div class="section-title">Adresse</div>
+      <div class="detail-map">
+        <div class="pin-shadow"></div>
+        <div class="pin">📍</div>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:22px">🏥</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:15px;color:var(--ink-900)">Cabinet El Alami</div>
+            <div style="font-size:13px;color:var(--ink-500);margin-top:2px">12 Av. Mohammed V, Rabat</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-primary" data-action="callDoctor">📞 Appeler le cabinet</button>
+      <button class="btn btn-secondary" data-action="goMaps">🗺️ Voir l'itinéraire</button>
+      <div class="danger-zone">
+        <button class="btn btn-ghost danger" data-action="confirmDeleteRdv">🗑️ Annuler ce rendez-vous</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 22 EDIT RDV ========== -->
+<template id="tpl-editRdv">
+  <div class="rdv-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Modifier le RDV</h2><div style="width:44px"></div></div>
+    <div class="rdv-doctor-card">
+      <div class="avatar">🩺</div>
+      <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--ink-900)">Dr. Brahim El Alami</div>
+      <div style="color:var(--ink-500);margin-top:2px;font-size:14px">Cardiologue · Rabat</div>
+    </div>
+    <div class="field"><label>Nom du médecin</label>
+      <div class="field-input"><i class="icon">👨‍⚕️</i><input value="Brahim El Alami"></div>
+    </div>
+    <div class="field"><label>Spécialité</label>
+      <div class="field-input"><i class="icon">🫀</i><input value="Cardiologue"></div>
+    </div>
+    <div class="field"><label>Date</label>
+      <div class="field-input"><i class="icon">📅</i><input value="Samedi 12 juillet 2025"></div>
+    </div>
+    <div class="field"><label>Adresse</label>
+      <div class="field-input"><i class="icon">📍</i><input value="12 Av. Mohammed V, Rabat"></div>
+    </div>
+    <div class="rdv-time-slots">
+      <div class="label">Heure</div>
+      <div class="slots">
+        <div class="rdv-slot" data-pick-slot>09:00</div>
+        <div class="rdv-slot active" data-pick-slot>10:30</div>
+        <div class="rdv-slot" data-pick-slot>14:00</div>
+        <div class="rdv-slot" data-pick-slot>15:30</div>
+        <div class="rdv-slot" data-pick-slot>16:00</div>
+        <div class="rdv-slot" data-pick-slot>17:30</div>
+      </div>
+    </div>
+    <div class="bottom-cta">
+      <button class="btn btn-primary" data-action="saveRdvEdit">Enregistrer les modifications</button>
+      <button class="btn btn-ghost danger" data-action="confirmDeleteRdv">🗑️ Annuler le RDV</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 23 SCAN ========== -->
+<template id="tpl-scan">
+  <div class="scan-screen">
+    <div class="scan-header">
+      <button class="close" data-action="back">←</button>
+      <h2>Photo de la boîte</h2>
+      <button class="close" data-action="go:errBlur">?</button>
+    </div>
+    <div class="scan-helper">📦 Cadrez la boîte du médicament</div>
+    <div class="scan-viewport">
+      <div class="scan-mockbox">
+        <div class="pharma-tag">SANOFI</div>
+        <div class="brand">DolirhumePro</div>
+        <div class="desc">Paracétamol 500mg • 16 comprimés</div>
+        <div class="img-area"></div>
+      </div>
+      <div class="scan-frame">
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+      </div>
+    </div>
+    <div class="scan-controls">
+      <div class="scan-instruction">
+        <div class="t1">Photographiez la boîte</div>
+        <div class="t2">Pas le comprimé · pas l'ordonnance</div>
+      </div>
+      <div class="scan-buttons">
+        <button class="side-btn" data-action="flash">⚡</button>
+        <button class="scan-shutter" data-action="takePhoto"></button>
+        <button class="side-btn" data-action="flip">🔄</button>
+      </div>
+      <div class="scan-manual-link" data-action="go:posologie">Saisir le nom à la main</div>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 24 POSOLOGIE ========== -->
+<template id="tpl-posologie">
+  <div class="pos-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Posologie</h2><div style="width:44px"></div></div>
+    <div class="pos-product-card">
+      <div class="img">💊</div>
+      <div class="info">
+        <div class="n">DolirhumePro</div>
+        <div class="s">Paracétamol 500mg</div>
+      </div>
+      <div class="edit">Modifier</div>
+    </div>
+    <div class="pos-section-title">Quand prendre ?</div>
+    <div class="pos-times">
+      <div class="pos-time active" data-toggle="time"><div class="emoji">⛅</div><div class="label">Matin</div><div class="time">08:00</div></div>
+      <div class="pos-time active" data-toggle="time"><div class="emoji">☀️</div><div class="label">Midi</div><div class="time">13:00</div></div>
+      <div class="pos-time" data-toggle="time"><div class="emoji">🌒</div><div class="label">Soir</div><div class="time">20:00</div></div>
+    </div>
+    <div class="pos-quantity">
+      <div class="label">Quantité par prise</div>
+      <div class="controls">
+        <button class="qbtn" data-action="qty-minus">−</button>
+        <div style="text-align:center">
+          <div class="qval" id="qtyVal">1</div>
+          <div class="qunit" id="qtyUnit">comprimé</div>
+        </div>
+        <button class="qbtn" data-action="qty-plus">+</button>
+      </div>
+    </div>
+    <div class="pos-section-title">Par rapport au repas</div>
+    <div class="pos-meal">
+      <button class="pos-meal-opt" data-pick-meal="avant"><div class="emoji">🥗</div><div class="label">Avant</div></button>
+      <button class="pos-meal-opt active" data-pick-meal="apres"><div class="emoji">🍽️</div><div class="label">Après</div></button>
+    </div>
+    <div class="pos-section-title">Durée du traitement</div>
+    <div class="pos-duration">
+      <div class="opt selected" data-pick-dur><div class="icon">📅</div><div class="label">7 jours</div><div class="arrow">›</div></div>
+      <div class="opt" data-pick-dur><div class="icon">🗓️</div><div class="label">Date précise</div><div class="arrow">›</div></div>
+      <div class="opt" data-pick-dur><div class="icon">♾️</div><div class="label">Traitement continu</div><div class="arrow">›</div></div>
+    </div>
+    <div class="bottom-cta">
+      <button class="btn btn-primary" data-action="posValidate">Valider</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 25 ADD RDV ========== -->
+<template id="tpl-addRdv">
+  <div class="rdv-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Nouveau rendez-vous</h2><div style="width:44px"></div></div>
+    <div class="field" style="margin-top:8px">
+      <label>Nom du médecin</label>
+      <div class="field-input"><i class="icon">👨‍⚕️</i><input placeholder="Ex: Brahim El Alami"></div>
+    </div>
+    <div class="field">
+      <label>Spécialité</label>
+      <div class="field-input"><i class="icon">🩺</i><input placeholder="Ex: Cardiologue"></div>
+    </div>
+    <div class="field">
+      <label>Date</label>
+      <div class="field-input"><i class="icon">📅</i><input placeholder="Choisir une date"></div>
+    </div>
+    <div class="field">
+      <label>Adresse</label>
+      <div class="field-input"><i class="icon">📍</i><input placeholder="Adresse du cabinet"></div>
+    </div>
+    <div class="rdv-time-slots">
+      <div class="label">Heure du rendez-vous</div>
+      <div class="slots">
+        <div class="rdv-slot" data-pick-slot>09:00</div>
+        <div class="rdv-slot" data-pick-slot>10:30</div>
+        <div class="rdv-slot active" data-pick-slot>14:00</div>
+        <div class="rdv-slot" data-pick-slot>15:30</div>
+        <div class="rdv-slot" data-pick-slot>16:00</div>
+        <div class="rdv-slot" data-pick-slot>17:30</div>
+      </div>
+    </div>
+    <div class="bottom-cta">
+      <button class="btn btn-primary" data-action="rdvValidate">Enregistrer le rendez-vous</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 26 RAPPEL ========== -->
+<template id="tpl-rappel">
+  <div class="rappel-screen">
+    <div class="rappel-time">
+      <div class="h">13:00</div>
+      <div class="d">jeudi 22 mai</div>
+    </div>
+    <div class="rappel-spacer"></div>
+    <div class="rappel-card">
+      <div class="rappel-header">
+        <div class="pulse"></div>
+        <div class="label">Rappel Dwaya</div>
+      </div>
+      <h3>C'est l'heure de prendre ton médicament</h3>
+      <div class="rappel-meds">
+        <div class="img">💊</div>
+        <div class="info">
+          <div class="n">Doliprane 500mg</div>
+          <div class="s">1 comprimé · après le repas</div>
+        </div>
+        <button class="audio-btn" data-action="speak">🔊</button>
+      </div>
+    </div>
+    <div class="rappel-actions">
+      <button class="rappel-action taken" data-action="taken">✓ J'ai pris</button>
+      <button class="rappel-action snooze" data-action="snooze">⏱ Dans 15 min</button>
+    </div>
+    <div class="rappel-call-family">
+      Besoin d'aide ? <a data-action="callDaughter">Appeler ma fille</a>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 27 HISTORIQUE ========== -->
+<template id="tpl-historique">
+  <div class="hist-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Mon historique</h2><div style="width:44px"></div></div>
+    <div class="hist-stats">
+      <div class="label">Observance · 30 jours</div>
+      <div class="pct">87%</div>
+      <div class="desc">26 jours sur 30 complets</div>
+      <div class="trend">↑ +12%</div>
+    </div>
+    <div class="hist-month">
+      <h3>Mai 2026</h3>
+      <div class="arrows">
+        <button class="arrow-btn" data-action="prevMonth">‹</button>
+        <button class="arrow-btn" data-action="nextMonth">›</button>
+      </div>
+    </div>
+    <div class="hist-cal">
+      <div class="week-days"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+      <div class="days">
+        <div class="hist-day empty"></div><div class="hist-day empty"></div>
+        <div class="hist-day full">1</div><div class="hist-day full">2</div><div class="hist-day full">3</div>
+        <div class="hist-day partial">4</div><div class="hist-day full">5</div>
+        <div class="hist-day full">6</div><div class="hist-day full">7</div><div class="hist-day full">8</div>
+        <div class="hist-day miss">9</div><div class="hist-day full">10</div><div class="hist-day full">11</div><div class="hist-day full">12</div>
+        <div class="hist-day full">13</div><div class="hist-day partial">14</div><div class="hist-day full">15</div>
+        <div class="hist-day full">16</div><div class="hist-day full">17</div><div class="hist-day full">18</div><div class="hist-day full">19</div>
+        <div class="hist-day full">20</div><div class="hist-day full">21</div><div class="hist-day today">22</div>
+        <div class="hist-day">23</div><div class="hist-day">24</div><div class="hist-day">25</div><div class="hist-day">26</div>
+        <div class="hist-day">27</div><div class="hist-day">28</div><div class="hist-day">29</div>
+        <div class="hist-day">30</div><div class="hist-day">31</div>
+      </div>
+    </div>
+    <div class="hist-legend">
+      <div class="item"><div class="dot" style="background:var(--success-500)"></div>Complet</div>
+      <div class="item"><div class="dot" style="background:var(--warn-500)"></div>Partiel</div>
+      <div class="item"><div class="dot" style="background:var(--danger-100)"></div>Oublié</div>
+    </div>
+    <div style="margin:0 20px">
+      <button class="btn btn-secondary" data-action="go:bilan">📊 Voir le bilan détaillé</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 28 BILAN ========== -->
+<template id="tpl-bilan">
+  <div class="bilan-screen">
+    <div class="bilan-hero">
+      <div class="top-bar" style="padding:12px 0"><button class="back-btn" style="background:rgba(255,255,255,0.2);color:white" data-action="back">←</button><h2 style="color:white">Bilan</h2><button class="icon-btn" data-action="speak">🔊</button></div>
+      <div class="bilan-big">
+        <div class="lbl">Adhérence — 30 jours</div>
+        <div class="pct">87%</div>
+        <div class="sub">Tu as pris 26 jours complets sur 30 🎯</div>
+      </div>
+    </div>
+    <div class="bilan-chart">
+      <h4>Évolution sur 7 jours</h4>
+      <div class="bilan-bars">
+        <div class="bilan-bar"><div class="col" style="height:70%" data-pct="70"></div><div class="lbl">Lun</div></div>
+        <div class="bilan-bar"><div class="col" style="height:100%" data-pct="100"></div><div class="lbl">Mar</div></div>
+        <div class="bilan-bar"><div class="col" style="height:100%" data-pct="100"></div><div class="lbl">Mer</div></div>
+        <div class="bilan-bar"><div class="col" style="height:50%" data-pct="50"></div><div class="lbl">Jeu</div></div>
+        <div class="bilan-bar"><div class="col" style="height:100%" data-pct="100"></div><div class="lbl">Ven</div></div>
+        <div class="bilan-bar"><div class="col" style="height:100%" data-pct="100"></div><div class="lbl">Sam</div></div>
+        <div class="bilan-bar"><div class="col" style="height:80%" data-pct="80"></div><div class="lbl">Dim</div></div>
+      </div>
+    </div>
+    <div class="bilan-stat-grid">
+      <div class="stat-card"><div class="em">💊</div><div class="val">3</div><div class="lbl">Médicaments actifs</div></div>
+      <div class="stat-card"><div class="em">✅</div><div class="val">87</div><div class="lbl">Prises ce mois</div></div>
+      <div class="stat-card"><div class="em">🎯</div><div class="val">12j</div><div class="lbl">Sans oubli</div></div>
+      <div class="stat-card"><div class="em">⏰</div><div class="val">94%</div><div class="lbl">À l'heure</div></div>
+    </div>
+    <div style="margin:18px 20px 0">
+      <div class="card" style="background:linear-gradient(135deg,var(--med-100),var(--primary-100));text-align:center">
+        <div style="font-size:30px;margin-bottom:8px">🎉</div>
+        <div style="font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--ink-900);margin-bottom:4px">Excellent travail !</div>
+        <div style="font-size:13px;color:var(--ink-500)">Tu as amélioré ton observance de 12% ce mois-ci</div>
+      </div>
+    </div>
+  </div>
+</template>
+<!-- ========== 29 SOS ========== -->
+<template id="tpl-sos">
+  <div class="sos-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Urgence</h2><button class="voice-btn" data-action="speak">🔊</button></div>
+    <div class="sos-banner" data-action="callSamu">
+      <div class="ic">🆘</div>
+      <div class="info">
+        <div class="t">Appel d'urgence</div>
+        <div class="s">15 — SAMU Maroc</div>
+      </div>
+      <div style="font-size:28px">📞</div>
+    </div>
+    <div class="contact-section-title">Mes contacts d'urgence</div>
+    <button class="contact-card med-doc" data-action="callDoctor">
+      <div class="ic">👨‍⚕️</div>
+      <div class="info"><div class="n">Dr. Brahim El Alami</div><div class="s">Médecin traitant · 05 37 XX XX 12</div></div>
+      <div class="call">📞</div>
+    </button>
+    <button class="contact-card fam" data-action="callSon">
+      <div class="ic">👨</div>
+      <div class="info"><div class="n">Mehdi (mon fils)</div><div class="s">06 12 34 56 78</div></div>
+      <div class="call">📞</div>
+    </button>
+    <button class="contact-card fam" data-action="callDaughter">
+      <div class="ic">👩</div>
+      <div class="info"><div class="n">Salma (ma fille)</div><div class="s">06 87 65 43 21</div></div>
+      <div class="call">📞</div>
+    </button>
+    <div style="margin:14px 20px">
+      <button class="btn btn-secondary" data-action="addContact">+ Ajouter un contact</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 30 PHARMA ========== -->
+<template id="tpl-pharma">
+  <div class="pharma-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Pharmacies</h2><button class="voice-btn" data-action="speak">🔊</button></div>
+    <div class="pharma-banner">
+      <div class="em">📍</div>
+      <h3>Pharmacies de garde</h3>
+      <p>Ouvertes maintenant · Près de toi</p>
+    </div>
+    <button class="pharma-card" data-action="go:detailPharma">
+      <div class="ic">💊</div>
+      <div class="info"><div class="n">Pharmacie Atlas</div><div class="a">Av. Mohammed V, Rabat</div></div>
+      <div class="right"><div class="badge open">Ouvert</div><div class="dist">350 m</div></div>
+    </button>
+    <button class="pharma-card" data-action="go:detailPharma">
+      <div class="ic">💊</div>
+      <div class="info"><div class="n">Pharmacie Hassan</div><div class="a">Rue de la Liberté, Agdal</div></div>
+      <div class="right"><div class="badge garde">Garde</div><div class="dist">820 m</div></div>
+    </button>
+    <button class="pharma-card" data-action="go:detailPharma">
+      <div class="ic">💊</div>
+      <div class="info"><div class="n">Pharmacie El Menzeh</div><div class="a">Bd. Al Quds, Hay Riad</div></div>
+      <div class="right"><div class="badge open">Ouvert</div><div class="dist">1.2 km</div></div>
+    </button>
+    <button class="pharma-card" data-action="go:detailPharma">
+      <div class="ic">💊</div>
+      <div class="info"><div class="n">Pharmacie Andalous</div><div class="a">Av. Al Andalous, Rabat</div></div>
+      <div class="right"><div class="badge garde">Garde</div><div class="dist">2.4 km</div></div>
+    </button>
+    <div style="margin:14px 20px 0">
+      <button class="btn btn-secondary" data-action="goMaps">🗺️ Voir sur la carte</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 31 DETAIL PHARMA ========== -->
+<template id="tpl-detailPharma">
+  <div class="detail-screen">
+    <div class="detail-hero">
+      <div class="top-row">
+        <button class="back-btn" data-action="back">←</button>
+        <div class="actions"><button class="icon-btn" data-action="speak">🔊</button></div>
+      </div>
+      <div class="pill-img-lg">💊</div>
+      <h1>Pharmacie Atlas</h1>
+      <div class="sub">Pharmacie de garde · Ouverte 24h/24</div>
+    </div>
+    <div class="detail-info-grid">
+      <div class="info-tile"><div class="lbl">Distance</div><div class="val"><span class="em">📍</span>350 m</div></div>
+      <div class="info-tile"><div class="lbl">À pied</div><div class="val"><span class="em">🚶</span>4 min</div></div>
+    </div>
+    <div class="detail-section">
+      <div class="section-title">Adresse</div>
+      <div class="detail-map"><div class="pin-shadow"></div><div class="pin">📍</div></div>
+      <div class="card" style="margin-top:10px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:22px">🏥</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:15px;color:var(--ink-900)">Pharmacie Atlas</div>
+            <div style="font-size:13px;color:var(--ink-500);margin-top:2px">Av. Mohammed V, Rabat</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="section-title">Horaires aujourd'hui</div>
+      <div class="detail-time-list">
+        <div class="time-row"><span class="em">🟢</span><span class="lbl">Ouvert maintenant</span><span class="hh" style="color:var(--success-500);font-size:14px">24h/24</span></div>
+      </div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-primary" data-action="callPharma">📞 Appeler la pharmacie</button>
+      <button class="btn btn-secondary" data-action="goMaps">🗺️ Itinéraire</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 32 PROFILE ========== -->
+<template id="tpl-profile">
+  <div class="profile-screen">
+    <div class="list-header"><h1>Mon profil</h1><button class="voice-btn" data-action="speak">🔊</button></div>
+    <div class="profile-card">
+      <div class="profile-avatar">A</div>
+      <div class="name">Asma Sabri</div>
+      <button class="btn btn-secondary" data-action="go:editProfile">✏️ Modifier mon profil</button>
+    </div>
+    <div class="settings-list">
+      <button class="settings-item s-bilan" data-action="go:bilan">
+        <div class="ic">📊</div>
+        <div class="info"><div class="n">Bilan & statistiques</div><div class="s">Voir mon adhérence</div></div>
+        <div class="arrow">›</div>
+      </button>
+      <button class="settings-item s-hist" data-action="go:historique">
+        <div class="ic">📋</div>
+        <div class="info"><div class="n">Historique</div><div class="s">Calendrier des prises</div></div>
+        <div class="arrow">›</div>
+      </button>
+      <button class="settings-item s-fam" data-action="go:famille">
+        <div class="ic">👨‍👩‍👧</div>
+        <div class="info"><div class="n">Mes proches aidants</div><div class="s">2 personnes liées</div></div>
+        <div class="arrow">›</div>
+      </button>
+      <button class="settings-item s-sos" data-action="go:sos">
+        <div class="ic">🆘</div>
+        <div class="info"><div class="n">Contacts d'urgence</div><div class="s">Médecin & famille</div></div>
+        <div class="arrow">›</div>
+      </button>
+    </div>
+    <div class="settings-list">
+      <button class="settings-item s-lang" data-action="go:settingsLang">
+        <div class="ic">🌍</div>
+        <div class="info"><div class="n">Langue</div><div class="s">Français · Audio Darija</div></div>
+        <div class="arrow">›</div>
+      </button>
+      <button class="settings-item s-notif" data-action="go:settingsNotif">
+        <div class="ic">🔔</div>
+        <div class="info"><div class="n">Notifications</div><div class="s">Sons, vibrations, voix</div></div>
+        <div class="arrow">›</div>
+      </button>
+      <button class="settings-item s-help" data-action="go:help">
+        <div class="ic">❓</div>
+        <div class="info"><div class="n">Aide & Support</div><div class="s">FAQ, contact</div></div>
+        <div class="arrow">›</div>
+      </button>
+    </div>
+    <button class="logout-btn" data-action="confirmLogout">🚪 Se déconnecter</button>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" data-action="go:home"><span class="ico">🏠</span><span>Aujourd'hui</span></button>
+    <button class="nav-item" data-action="go:listMed"><span class="ico">💊</span><span>Médic.</span></button>
+    <button class="nav-item" data-action="go:listRdv"><span class="ico">📅</span><span>RDV</span></button>
+    <button class="nav-item active" data-action="go:profile"><span class="ico">👤</span><span>Moi</span></button>
+  </div>
+</template>
+
+<!-- ========== 33 EDIT PROFILE ========== -->
+<template id="tpl-editProfile">
+  <div class="auth-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Modifier le profil</h2><div style="width:44px"></div></div>
+    <div style="text-align:center;padding:20px 0 10px">
+      <div class="profile-avatar" style="margin:0 auto 10px">A</div>
+      <button class="btn-ghost" style="background:none;border:none;color:var(--primary-600);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit" data-action="changePhoto">📷 Changer la photo</button>
+    </div>
+    <div class="field"><label>Prénom</label>
+      <div class="field-input"><i class="icon">👤</i><input value="Asma"></div>
+    </div>
+    <div class="field"><label>Nom</label>
+      <div class="field-input"><i class="icon">👤</i><input value="Sabri"></div>
+    </div>
+    <div class="field"><label>Téléphone</label>
+      <div class="field-input"><i class="icon">📞</i><input value="06 33 67 38 91"></div>
+    </div>
+    <div class="field"><label>Date de naissance</label>
+      <div class="field-input"><i class="icon">🎂</i><input value="14 mars 1955"></div>
+    </div>
+    <div class="field"><label>Email (optionnel)</label>
+      <div class="field-input"><i class="icon">📧</i><input placeholder="ton@email.com" value="asma.sabri@gmail.com"></div>
+    </div>
+    <div style="padding:16px 20px 24px">
+      <button class="btn btn-primary" data-action="saveProfile">Enregistrer</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 34 SETTINGS NOTIF ========== -->
+<template id="tpl-settingsNotif">
+  <div class="notif-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Notifications</h2><div style="width:44px"></div></div>
+    <div class="notif-section-title">Rappels de médicaments</div>
+    <div class="notif-group">
+      <div class="notif-row">
+        <div class="info"><div class="n">Activer les rappels</div><div class="s">Notifications avant chaque prise</div></div>
+        <button class="switch on" data-toggle-switch></button>
+      </div>
+      <div class="notif-row">
+        <div class="info"><div class="n">Son du rappel</div><div class="s">Cloche douce · 10s</div></div>
+        <button class="switch on" data-toggle-switch></button>
+      </div>
+      <div class="notif-row">
+        <div class="info"><div class="n">Vibration</div><div class="s">Vibrer même en silencieux</div></div>
+        <button class="switch on" data-toggle-switch></button>
+      </div>
+      <div class="notif-row">
+        <div class="info"><div class="n">Lecture vocale automatique</div><div class="s">L'app lit le rappel à voix haute</div></div>
+        <button class="switch on" data-toggle-switch></button>
+      </div>
+    </div>
+    <div class="notif-section-title">Alertes oubli</div>
+    <div class="notif-group">
+      <div class="notif-row">
+        <div class="info"><div class="n">Rappel après 15 min</div><div class="s">Si je n'ai pas validé la prise</div></div>
+        <button class="switch on" data-toggle-switch></button>
+      </div>
+      <div class="notif-row">
+        <div class="info"><div class="n">Alerter mes proches</div><div class="s">Après 30 min d'oubli (avec mon accord)</div></div>
+        <button class="switch" data-toggle-switch></button>
+      </div>
+    </div>
+    <div class="notif-section-title">Rendez-vous</div>
+    <div class="notif-group">
+      <div class="notif-row">
+        <div class="info"><div class="n">Rappel la veille</div><div class="s">À 18:00 la veille du RDV</div></div>
+        <button class="switch on" data-toggle-switch></button>
+      </div>
+      <div class="notif-row">
+        <div class="info"><div class="n">Rappel 2h avant</div><div class="s">Pour partir à temps</div></div>
+        <button class="switch on" data-toggle-switch></button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 35 SETTINGS LANGUE ========== -->
+<template id="tpl-settingsLang">
+  <div class="lang-screen" style="background:var(--bg-soft)">
+    <div class="top-bar" style="padding:0 0 12px"><button class="back-btn" data-action="back">←</button><h2>Langue</h2><div style="width:44px"></div></div>
+    <div style="margin-bottom:18px;text-align:center;padding:14px 24px;background:var(--primary-50);border-radius:var(--r-md);border:1px solid var(--primary-100)">
+      <div style="font-size:13px;color:var(--ink-500);line-height:1.5">Tu peux changer la langue à tout moment. La voix s'adapte automatiquement.</div>
+    </div>
+    <button class="lang-tile" data-pick-lang>
+      <span class="flag">🇲🇦</span>
+      <div class="nm"><div class="n arabic">الدارجة</div><div class="s">Darija (audio) 🔊</div></div>
+      <span class="check"></span>
+    </button>
+    <button class="lang-tile selected" data-pick-lang>
+      <span class="flag">🇫🇷</span>
+      <div class="nm"><div class="n">Français</div><div class="s">Français</div></div>
+      <span class="check"></span>
+    </button>
+    <button class="lang-tile" data-pick-lang>
+      <span class="flag">🇲🇦</span>
+      <div class="nm"><div class="n arabic">العربية</div><div class="s">Arabe</div></div>
+      <span class="check"></span>
+    </button>
+    <div style="flex:1"></div>
+    <button class="btn btn-primary" data-action="saveLang">Enregistrer</button>
+  </div>
+</template>
+
+<!-- ========== 36 HELP & SUPPORT ========== -->
+<template id="tpl-help">
+  <div class="help-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Aide & Support</h2><div style="width:44px"></div></div>
+    <div class="help-banner">
+      <div class="em">🤝</div>
+      <h3>On est là pour t'aider</h3>
+      <p>Une question ? Un problème ? On répond en moins de 24h.</p>
+    </div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-300);margin:14px 20px 8px">Questions fréquentes</div>
+    <div class="faq-item open" data-toggle-faq>
+      <div class="q"><span>Comment ajouter un médicament ?</span><span class="arrow">›</span></div>
+      <div class="a">Sur l'écran d'accueil, touche la tuile verte "Médicament", puis prends une photo de la boîte. L'app reconnaît automatiquement le nom et te demande la posologie.</div>
+    </div>
+    <div class="faq-item" data-toggle-faq>
+      <div class="q"><span>L'app peut-elle me parler ?</span><span class="arrow">›</span></div>
+      <div class="a">Oui ! Active l'option "Lecture vocale automatique" dans Réglages > Notifications. La voix peut être en Darija, Français ou Arabe.</div>
+    </div>
+    <div class="faq-item" data-toggle-faq>
+      <div class="q"><span>Comment partager avec ma fille ?</span><span class="arrow">›</span></div>
+      <div class="a">Va dans Profil > Mes proches aidants > Ajouter un proche. Tu choisis exactement ce qu'elle peut voir.</div>
+    </div>
+    <div class="faq-item" data-toggle-faq>
+      <div class="q"><span>Mes données sont-elles sécurisées ?</span><span class="arrow">›</span></div>
+      <div class="a">Oui. Tes données sont chiffrées et stockées au Maroc. Personne d'autre que toi (et les proches que tu autorises) ne peut les voir.</div>
+    </div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-300);margin:18px 20px 8px">Nous contacter</div>
+    <div class="contact-help" style="margin-bottom:24px">
+      <button class="row" style="background:none;border:none;width:100%;cursor:pointer;font-family:inherit;text-align:left" data-action="openSupportPhone">
+        <div class="ic">📞</div>
+        <div class="info"><div class="n">Par téléphone</div><div class="s">05 37 XX XX 00 · 9h-18h</div></div>
+      </button>
+      <button class="row" style="background:none;border:none;width:100%;cursor:pointer;font-family:inherit;text-align:left" data-action="openSupportMail">
+        <div class="ic">📧</div>
+        <div class="info"><div class="n">Par email</div><div class="s">support@dwaya.ma</div></div>
+      </button>
+      <button class="row" style="background:none;border:none;width:100%;cursor:pointer;font-family:inherit;text-align:left" data-action="openSupportWhatsapp">
+        <div class="ic">💬</div>
+        <div class="info"><div class="n">WhatsApp</div><div class="s">06 12 34 56 78 · 7j/7</div></div>
+      </button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 37 FAMILLE ========== -->
+<template id="tpl-famille">
+  <div class="fam-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Mes proches</h2><div style="width:44px"></div></div>
+    <div class="fam-banner">
+      <div class="icon">🤝</div>
+      <h3>Tu gardes le contrôle</h3>
+      <p>Le partage est <strong>désactivé par défaut</strong>. Tu choisis exactement ce que tes proches voient. Tu peux tout désactiver à tout moment.</p>
+      <div class="control-line">✓ Tu décides · tu restes maîtresse</div>
+    </div>
+    <div class="fam-section-title">Mes proches</div>
+    <div class="fam-pref">
+      <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--primary-300),var(--primary-500));display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:700">N</div>
+      <div class="info">
+        <div class="n">Nadia (ma fille)</div>
+        <div class="s">Infirmière · Casablanca</div>
+      </div>
+      <button class="switch on" data-toggle-switch></button>
+    </div>
+    <div class="fam-pref">
+      <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#fcd34d,#f59e0b);display:flex;align-items:center;justify-content:center;color:white;font-size:18px;font-weight:700">M</div>
+      <div class="info">
+        <div class="n">Mehdi (mon fils)</div>
+        <div class="s">Ingénieur · Rabat</div>
+      </div>
+      <button class="switch on" data-toggle-switch></button>
+    </div>
+    <div class="fam-section-title">Que peuvent-ils voir ?</div>
+    <div class="fam-pref">
+      <div class="info"><div class="n">Mes médicaments</div><div class="s">La liste, sans détails médicaux</div></div>
+      <button class="switch on" data-toggle-switch></button>
+    </div>
+    <div class="fam-pref">
+      <div class="info"><div class="n">Mes prises quotidiennes</div><div class="s">Si j'ai pris ou oublié, en temps réel</div></div>
+      <button class="switch" data-toggle-switch></button>
+    </div>
+    <div class="fam-pref">
+      <div class="info"><div class="n">Alerter en cas d'oubli</div><div class="s">Notification après 30 min de retard</div></div>
+      <button class="switch on" data-toggle-switch></button>
+    </div>
+    <div class="fam-pref">
+      <div class="info"><div class="n">Mes rendez-vous médicaux</div><div class="s">Date, médecin, sans le motif</div></div>
+      <button class="switch" data-toggle-switch></button>
+    </div>
+    <div class="fam-add" data-action="go:addProche">+ Ajouter un proche</div>
+  </div>
+</template>
+
+<!-- ========== 38 ADD PROCHE ========== -->
+<template id="tpl-addProche">
+  <div class="addproche-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Ajouter un proche</h2><div style="width:44px"></div></div>
+    <div class="proche-illust">
+      <div class="em">👨‍👩‍👧</div>
+      <h2>Invite un proche</h2>
+      <p>Il/elle recevra un SMS pour télécharger Dwaya et se connecter à ton compte.</p>
+    </div>
+    <div class="field"><label>Prénom du proche</label>
+      <div class="field-input"><i class="icon">👤</i><input placeholder="Ex: Nadia"></div>
+    </div>
+    <div class="field"><label>Lien de parenté</label>
+      <div class="field-input"><i class="icon">❤️</i><input placeholder="Ex: Ma fille"></div>
+    </div>
+    <div class="field"><label>Numéro de téléphone</label>
+      <div class="field-input"><i class="icon">📞</i><input placeholder="06 XX XX XX XX"></div>
+    </div>
+    <div style="padding:0 20px;margin-bottom:14px">
+      <div style="background:var(--primary-50);border:1px solid var(--primary-100);border-radius:var(--r-md);padding:14px;font-size:13px;color:var(--ink-700);line-height:1.5">
+        <strong>🔒 Tes données restent privées.</strong> Ton proche ne pourra rien voir tant que tu ne l'autorises pas écran par écran.
+      </div>
+    </div>
+    <div class="bottom-cta">
+      <button class="btn btn-primary" data-action="inviteProche">Envoyer l'invitation par SMS</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 39 ERR OFFLINE ========== -->
+<template id="tpl-errOffline">
+  <div class="error-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Hors ligne</h2><div style="width:44px"></div></div>
+    <div class="error-content">
+      <div class="error-icon" style="background:var(--ink-50);color:var(--ink-500)">📡</div>
+      <div>
+        <h2>Pas de connexion</h2>
+        <p>On ne peut pas se connecter à internet. Tes rappels locaux fonctionnent toujours.</p>
+      </div>
+    </div>
+    <div class="error-actions">
+      <button class="btn btn-primary" data-action="retryConnection">🔄 Réessayer</button>
+      <button class="btn btn-secondary" data-action="go:home">Continuer hors ligne</button>
+    </div>
+  </div>
+</template>
+
+<!-- ========== 40 ERR BLUR ========== -->
+<template id="tpl-errBlur">
+  <div class="error-screen">
+    <div class="top-bar"><button class="back-btn" data-action="back">←</button><h2>Photo trop floue</h2><div style="width:44px"></div></div>
+    <div class="error-content">
+      <div class="error-icon" style="background:var(--warn-100);color:#92400E">📷</div>
+      <div>
+        <h2>Photo trop floue</h2>
+        <p>On n'arrive pas à lire le nom du médicament. Réessaie en tenant le téléphone bien droit.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;width:100%;margin-top:8px">
+        <div class="perm-bullet"><div class="ic">💡</div><div class="tx">Bonne lumière, pas de reflets</div></div>
+        <div class="perm-bullet"><div class="ic">📐</div><div class="tx">Cadre toute la boîte</div></div>
+        <div class="perm-bullet"><div class="ic">✋</div><div class="tx">Tiens le téléphone immobile</div></div>
+      </div>
+    </div>
+    <div class="error-actions">
+      <button class="btn btn-primary" data-action="go:scan">📷 Reprendre la photo</button>
+      <button class="btn btn-secondary" data-action="go:posologie">⌨️ Saisir le nom à la main</button>
+    </div>
+  </div>
+</template>
+<!-- =========================================
+     NAVIGATION ENGINE
+     ========================================= -->
+<script>
+  const SCREENS = {
+    splash: { title: 'Splash', desc: 'Page de lancement, logo cloche au design pastel comme dans la maquette.', badge: 'flow', badgeText: 'Onboarding', dark: false },
+    langue: { title: 'Choix de la langue', desc: "Darija (audio), Français, Arabe — drapeaux + écriture native pour faciliter le choix.", badge: 'new', badgeText: 'Multilingue', dark: false },
+    onb1: { title: 'Onboarding 1/3', desc: "Photo du médicament — pas besoin d'écrire, juste cadrer.", badge: 'flow', badgeText: 'Découverte', dark: false },
+    onb2: { title: 'Onboarding 2/3', desc: "On rappelle l'heure avec voix et photo — promesse principale.", badge: 'flow', badgeText: 'Découverte', dark: false },
+    onb3: { title: 'Onboarding 3/3', desc: "Mode aidant — un proche peut configurer à distance.", badge: 'flow', badgeText: 'Découverte', dark: false },
+    permNotif: { title: 'Permission notifications', desc: "Écran pédagogique : pourquoi on demande la permission, ce qu'on en fait, comment couper.", badge: 'new', badgeText: 'Pédagogique', dark: false },
+    permCam: { title: 'Permission caméra', desc: "Idem caméra : usage limité à la boîte, photos restent locales, fallback saisie manuelle.", badge: 'new', badgeText: 'Pédagogique', dark: false },
+    mode: { title: 'Patient ou aidant ?', desc: "Choix initial qui adapte tout le reste de l'app : flow patient (rappels) vs flow aidant (multi-proches).", badge: 'flow', badgeText: 'Aiguillage', dark: false },
+    signup: { title: 'Créer un compte', desc: 'Prénom + téléphone + mot de passe. Court, rassurant, avec lecteur vocal.', badge: 'flow', badgeText: 'Auth', dark: false },
+    login: { title: 'Se connecter', desc: 'Login séparé du signup. Inclut "Mot de passe oublié" et bascule vers création de compte.', badge: 'new', badgeText: 'Auth', dark: false },
+    forgot: { title: 'Mot de passe oublié', desc: 'Récupération par SMS — flow simple : numéro → code OTP → nouveau mot de passe.', badge: 'new', badgeText: 'Récupération', dark: false },
+    verify: { title: 'Vérification OTP', desc: 'Saisie du code à 5 chiffres reçu par SMS. Champs auto-skip et option "Renvoyer".', badge: 'flow', badgeText: 'Auth', dark: false },
+    welcome: { title: 'Bienvenue !', desc: "Confirmation de création/connexion. Transition rassurante avant l'app principale.", badge: 'flow', badgeText: 'Confirmation', dark: false },
+    home: { title: "Aujourd'hui", desc: 'Tableau de bord : prochain rappel + 3 actions rapides (médic / RDV / urgence) + médicaments du jour + prochain RDV.', badge: 'flow', badgeText: 'Hub principal', dark: false },
+    listMed: { title: 'Mes médicaments', desc: 'Liste complète des médicaments actifs avec posologie + onglets actifs/terminés.', badge: 'new', badgeText: 'Liste', dark: false },
+    emptyMed: { title: 'Empty : aucun médicament', desc: 'État vide pédagogique avec illustration + CTA principal pour ajouter le premier.', badge: 'empty', badgeText: 'Empty state', dark: false },
+    detailMed: { title: 'Détail médicament', desc: "Toutes les infos d'un médicament + heures de prise + stats semaine + édition + suppression.", badge: 'new', badgeText: 'Détail', dark: false },
+    editMed: { title: 'Édition médicament', desc: "Modification de la posologie d'un médicament existant.", badge: 'new', badgeText: 'Édition', dark: false },
+    listRdv: { title: 'Mes rendez-vous', desc: 'Liste des RDV à venir et passés (passés grisés).', badge: 'new', badgeText: 'Liste', dark: false },
+    emptyRdv: { title: 'Empty : aucun RDV', desc: "État vide pour les rendez-vous avec invitation à en créer un.", badge: 'empty', badgeText: 'Empty state', dark: false },
+    detailRdv: { title: 'Détail rendez-vous', desc: 'Adresse, plan, bouton appeler le cabinet, itinéraire, suppression.', badge: 'new', badgeText: 'Détail', dark: false },
+    editRdv: { title: 'Édition rendez-vous', desc: "Modifier date, heure, adresse d'un RDV existant.", badge: 'new', badgeText: 'Édition', dark: false },
+    scan: { title: 'Photo de la boîte', desc: '"Photo" plutôt que "scan" + helper animé en haut + fallback saisie manuelle.', badge: 'flow', badgeText: 'Ajout', dark: true },
+    posologie: { title: 'Posologie', desc: 'Tout sur un écran : moments, quantité, repas, durée. Validation en bas.', badge: 'flow', badgeText: 'Ajout', dark: false },
+    addRdv: { title: 'Nouveau rendez-vous', desc: 'Formulaire complet : médecin, spécialité, date, adresse, créneau horaire.', badge: 'flow', badgeText: 'Ajout', dark: false },
+    rappel: { title: 'Rappel (lockscreen)', desc: 'Notification plein écran avec bouton audio, "J\'ai pris" et snooze 15 min.', badge: 'flow', badgeText: 'Critique', dark: true },
+    historique: { title: 'Calendrier observance', desc: 'Calendrier coloré (vert/orange/rouge) par jour + observance globale 30j.', badge: 'new', badgeText: 'Suivi', dark: false },
+    bilan: { title: 'Bilan détaillé', desc: "Adhérence en grand format + graphique 7 jours + 4 statistiques clés + message d'encouragement.", badge: 'new', badgeText: 'Stats', dark: false },
+    sos: { title: 'SOS & contacts urgence', desc: "Bouton SAMU 15 + médecin traitant + proches. Tous appelables d'un tap.", badge: 'new', badgeText: 'Urgence', dark: false },
+    pharma: { title: 'Pharmacies de garde', desc: "Spécifique Maroc : pharmacies ouvertes/de garde près de l'utilisateur, distance affichée.", badge: 'new', badgeText: 'Maroc', dark: false },
+    detailPharma: { title: 'Détail pharmacie', desc: 'Carte + adresse + horaires + bouton appeler + itinéraire.', badge: 'new', badgeText: 'Détail', dark: false },
+    profile: { title: 'Mon profil', desc: 'Photo + nom + tel + accès à : bilan, historique, proches, urgence, langue, notifs, aide, déconnexion.', badge: 'new', badgeText: 'Hub réglages', dark: false },
+    editProfile: { title: 'Modifier le profil', desc: 'Édition prénom, nom, téléphone, date de naissance, email + changement de photo.', badge: 'new', badgeText: 'Édition', dark: false },
+    settingsNotif: { title: 'Réglages notifications', desc: 'Switches granulaires : rappels, son, vibration, lecture vocale, alertes oubli, RDV.', badge: 'new', badgeText: 'Réglages', dark: false },
+    settingsLang: { title: 'Changer la langue', desc: 'Modification de la langue active après le choix initial.', badge: 'new', badgeText: 'Réglages', dark: false },
+    help: { title: 'Aide & Support', desc: 'FAQ pliable + 3 moyens de contact (téléphone, email, WhatsApp).', badge: 'new', badgeText: 'Support', dark: false },
+    famille: { title: 'Partage familial', desc: 'Opt-in granulaire : 2 proches + 4 permissions (médics, prises, alertes, RDV).', badge: 'pivot', badgeText: 'Privacy-first', dark: false },
+    addProche: { title: 'Ajouter un proche', desc: 'Invitation par SMS avec rappel rassurant : aucun accès tant que l\'opt-in n\'est pas fait.', badge: 'new', badgeText: 'Famille', dark: false },
+    errOffline: { title: 'Erreur : hors ligne', desc: 'État dégradé quand pas de réseau. Rappels locaux toujours fonctionnels.', badge: 'error', badgeText: 'Erreur', dark: false },
+    errBlur: { title: 'Erreur : photo floue', desc: "État d'erreur de scan + 3 conseils visuels + 2 actions (reprendre / saisir manuellement).", badge: 'error', badgeText: 'Erreur', dark: false },
+  };
+
+  const ORDER = Object.keys(SCREENS);
+
+  let currentScreen = null;
+  let history_stack = [];
+  let qty = 1;
+  let pendingDelete = null;
+
+  const screenHost = document.getElementById('screenHost');
+  const nsTitle = document.getElementById('nsTitle');
+  const nsDesc = document.getElementById('nsDesc');
+  const nsBadge = document.getElementById('nsBadge');
+  const statusBar = document.getElementById('statusBar');
+  const statusTime = document.getElementById('statusTime');
+
+  function buildScreenNode(id) {
+    const tpl = document.getElementById('tpl-' + id);
+    if (!tpl) return null;
+    const wrap = document.createElement('div');
+    wrap.className = 'screen';
+    wrap.dataset.id = id;
+    wrap.appendChild(tpl.content.cloneNode(true));
+    bindInteractions(wrap, id);
+    return wrap;
+  }
+
+  function bindInteractions(root, id) {
+    root.querySelectorAll('[data-action]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleAction(el.dataset.action, el, id);
+      });
+    });
+    root.querySelectorAll('[data-toggle="time"]').forEach(el => {
+      el.addEventListener('click', () => el.classList.toggle('active'));
+    });
+    root.querySelectorAll('[data-pick-meal]').forEach(el => {
+      el.addEventListener('click', () => {
+        root.querySelectorAll('[data-pick-meal]').forEach(o => o.classList.remove('active'));
+        el.classList.add('active');
+      });
+    });
+    root.querySelectorAll('[data-pick-dur]').forEach(el => {
+      el.addEventListener('click', () => {
+        root.querySelectorAll('[data-pick-dur]').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+      });
+    });
+    root.querySelectorAll('[data-pick-mode]').forEach(el => {
+      el.addEventListener('click', () => {
+        root.querySelectorAll('[data-pick-mode]').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+      });
+    });
+    root.querySelectorAll('[data-pick-lang]').forEach(el => {
+      el.addEventListener('click', () => {
+        root.querySelectorAll('[data-pick-lang]').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+      });
+    });
+    root.querySelectorAll('[data-pick-slot]').forEach(el => {
+      el.addEventListener('click', () => {
+        root.querySelectorAll('[data-pick-slot]').forEach(o => o.classList.remove('active'));
+        el.classList.add('active');
+      });
+    });
+    root.querySelectorAll('[data-toggle-switch]').forEach(el => {
+      el.addEventListener('click', () => el.classList.toggle('on'));
+    });
+    root.querySelectorAll('[data-toggle-faq]').forEach(el => {
+      el.addEventListener('click', () => el.classList.toggle('open'));
+    });
+    root.querySelectorAll('[data-tab]').forEach(el => {
+      el.addEventListener('click', () => {
+        root.querySelectorAll('[data-tab]').forEach(o => o.classList.remove('active'));
+        el.classList.add('active');
+      });
+    });
+  }
+
+  function handleAction(act, el, screenId) {
+    if (act.startsWith('go:')) { goTo(act.slice(3)); return; }
+    if (act === 'back') { goBack(); return; }
+    switch (act) {
+      case 'qty-plus':  qty = Math.min(qty + 1, 9); updateQty(); break;
+      case 'qty-minus': qty = Math.max(qty - 1, 1); updateQty(); break;
+      case 'posValidate':
+        showToast('✓ Médicament ajouté');
+        setTimeout(() => goTo('home'), 700); break;
+      case 'rdvValidate':
+        showToast('✓ Rendez-vous enregistré');
+        setTimeout(() => goTo('home'), 700); break;
+      case 'saveMedEdit':
+        showToast('✓ Modifications enregistrées');
+        setTimeout(() => goTo('detailMed'), 700); break;
+      case 'saveRdvEdit':
+        showToast('✓ Modifications enregistrées');
+        setTimeout(() => goTo('detailRdv'), 700); break;
+      case 'saveProfile':
+        showToast('✓ Profil mis à jour');
+        setTimeout(() => goTo('profile'), 700); break;
+      case 'saveLang':
+        showToast('✓ Langue enregistrée');
+        setTimeout(() => goTo('profile'), 700); break;
+      case 'taken':
+        showToast('✓ Bravo, prise enregistrée');
+        setTimeout(() => goTo('home'), 800); break;
+      case 'snooze':
+        showToast('⏱ Rappel dans 15 minutes', 'warn');
+        setTimeout(() => goTo('home'), 700); break;
+      case 'speak': showToast('🔊 Lecture vocale (darija)'); break;
+      case 'callDaughter': openCall('Nadia', 'Ma fille', 'N'); break;
+      case 'callSon': openCall('Mehdi', 'Mon fils', 'M'); break;
+      case 'callDoctor': openCall('Dr. Brahim', 'Médecin traitant', 'B'); break;
+      case 'callSamu': openCall('SAMU 15', 'Urgence Maroc', '🆘'); break;
+      case 'callPharma': openCall('Pharmacie Atlas', 'Av. Mohammed V', '💊'); break;
+      case 'flash': showToast('Flash activé'); break;
+      case 'flip': showToast('Caméra retournée'); break;
+      case 'takePhoto':
+        showToast('📷 Photo prise');
+        setTimeout(() => goTo('posologie'), 600); break;
+      case 'notif': showToast('Aucune nouvelle notification'); break;
+      case 'permNotifAccept':
+        showToast('✓ Notifications activées');
+        setTimeout(() => goTo('permCam'), 600); break;
+      case 'permCamAccept':
+        showToast('✓ Caméra activée');
+        setTimeout(() => goTo('mode'), 600); break;
+      case 'resendOtp': showToast('📲 Code renvoyé'); break;
+      case 'changePhoto': showToast('Bibliothèque photo : à venir'); break;
+      case 'inviteProche':
+        showToast("📲 SMS d'invitation envoyé");
+        setTimeout(() => goTo('famille'), 700); break;
+      case 'addContact': showToast('Ajouter un contact : à venir'); break;
+      case 'goMaps': showToast('🗺️ Ouverture de la carte'); break;
+      case 'retryConnection':
+        showToast('🔄 Connexion rétablie');
+        setTimeout(() => goTo('home'), 600); break;
+      case 'prevMonth':
+      case 'nextMonth': showToast('Navigation mois : à venir'); break;
+      case 'openSupportPhone': openCall('Support Dwaya', '05 37 XX XX 00', '🤝'); break;
+      case 'openSupportMail': showToast('📧 Ouverture email'); break;
+      case 'openSupportWhatsapp': showToast('💬 Ouverture WhatsApp'); break;
+      case 'confirmDeleteMed':
+        showModal('Supprimer ce médicament ?', 'Tous les rappels associés seront supprimés. Cette action ne peut pas être annulée.', () => {
+          showToast('🗑️ Médicament supprimé', 'danger');
+          setTimeout(() => goTo('listMed'), 700);
+        });
+        break;
+      case 'confirmDeleteRdv':
+        showModal('Annuler ce rendez-vous ?', 'Le rappel associé sera également supprimé.', () => {
+          showToast('🗑️ Rendez-vous annulé', 'danger');
+          setTimeout(() => goTo('listRdv'), 700);
+        });
+        break;
+      case 'confirmLogout':
+        showModal('Se déconnecter ?', 'Tu devras te reconnecter avec ton numéro et ton mot de passe.', () => {
+          showToast('À bientôt !');
+          setTimeout(() => { history_stack = []; goTo('splash'); }, 700);
+        }, '🚪');
+        break;
+    }
+  }
+
+  function updateQty() {
+    const v = document.querySelector('.screen.active #qtyVal');
+    const u = document.querySelector('.screen.active #qtyUnit');
+    if (v) v.textContent = qty;
+    if (u) u.textContent = qty === 1 ? 'comprimé' : 'comprimés';
+  }
+
+  function goTo(id, opts) {
+    opts = opts || {};
+    if (!SCREENS[id]) return;
+    if (currentScreen === id) return;
+
+    const prev = screenHost.querySelector('.screen.active');
+    if (prev) {
+      prev.classList.remove('active');
+      prev.classList.add('leaving');
+      setTimeout(() => { if (prev.parentElement) prev.parentElement.removeChild(prev); }, 350);
+    }
+
+    const node = buildScreenNode(id);
+    if (!node) return;
+    screenHost.appendChild(node);
+    requestAnimationFrame(() => { node.classList.add('active'); });
+
+    if (currentScreen && !opts.fromBack) history_stack.push(currentScreen);
+    currentScreen = id;
+
+    const meta = SCREENS[id];
+    nsTitle.textContent = meta.title;
+    nsDesc.textContent = meta.desc;
+    nsBadge.className = 'ns-badge ' + meta.badge;
+    nsBadge.textContent = meta.badgeText;
+    statusBar.classList.toggle('dark', !!meta.dark);
+
+    document.querySelectorAll('.menu-item').forEach(mi => {
+      mi.classList.toggle('active', mi.dataset.go === id);
+    });
+
+    const activeMenu = document.querySelector('.menu-item.active');
+    if (activeMenu && activeMenu.scrollIntoView) {
+      try { activeMenu.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+    }
+
+    if (navigator.vibrate) navigator.vibrate(8);
+  }
+
+  function goBack() {
+    if (history_stack.length > 0) {
+      const prev = history_stack.pop();
+      goTo(prev, { fromBack: true });
+    } else {
+      goTo('home', { fromBack: true });
+    }
+  }
+
+  // TOAST
+  let toastTimer = null;
+  function showToast(msg, kind) {
+    kind = kind || 'success';
+    const toast = document.getElementById('phoneToast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.classList.remove('warn', 'danger');
+    if (kind !== 'success') toast.classList.add(kind);
+    const ico = document.getElementById('toastIco');
+    ico.textContent = kind === 'danger' ? '🗑' : kind === 'warn' ? '⏱' : '✓';
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  // CALL
+  function openCall(name, sub, initial) {
+    document.getElementById('callName').textContent = name;
+    document.getElementById('callSub').textContent = sub;
+    document.getElementById('callAvatar').textContent = initial;
+    document.getElementById('callOverlay').classList.add('show');
+  }
+  function endCall() {
+    document.getElementById('callOverlay').classList.remove('show');
+    showToast('Appel terminé');
+  }
+  window.endCall = endCall;
+  window.goTo = goTo;
+  window.showToast = showToast;
+
+  // MODAL
+  function showModal(title, msg, onConfirm, icon) {
+    icon = icon || '⚠️';
+    pendingDelete = onConfirm;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalMsg').textContent = msg;
+    document.getElementById('modalIcon').textContent = icon;
+    document.getElementById('modalOverlay').classList.add('show');
+  }
+  function confirmModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+    if (pendingDelete) pendingDelete();
+    pendingDelete = null;
+  }
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+    pendingDelete = null;
+  }
+  window.confirmModal = confirmModal;
+  window.closeModal = closeModal;
+
+  // MENU
+  document.querySelectorAll('.menu-item').forEach(mi => {
+    mi.addEventListener('click', () => goTo(mi.dataset.go));
+  });
+
+  // KEYBOARD
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    const idx = ORDER.indexOf(currentScreen);
+    if (e.key === 'ArrowRight' && idx < ORDER.length - 1) goTo(ORDER[idx + 1]);
+    else if (e.key === 'ArrowLeft' && idx > 0) goTo(ORDER[idx - 1]);
+    else if (e.key === 'Escape') {
+      if (document.getElementById('callOverlay').classList.contains('show')) endCall();
+      else if (document.getElementById('modalOverlay').classList.contains('show')) closeModal();
+      else goBack();
+    } else if (e.key === 'Home' || e.key === 'h') goTo('home');
+  });
+
+  // CLOCK
+  function tickClock() {
+    const d = new Date();
+    statusTime.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  tickClock();
+  setInterval(tickClock, 30000);
+
+  // INIT
+  goTo('splash');
+</script>
+
+</body>
+</html>
